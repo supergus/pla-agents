@@ -259,6 +259,7 @@ The process is described once, in section 3 ("CI/CD Process"). Two proof points 
   - `parse_rfq_document`: RFQ PDF or email to draft RFQ; low-confidence fields become Issues, not guesses; canned fallback if the model is down
   - `match_library_part`: writes an `rfq:SimilarityMatch` from the RFQ line to a known product (`forRFQLine`, `matchedProduct`, `similarityScore`, `similarityMethod`), the same class the estimator's BOM-line matches use
   - `explain_quote`: plain-language summary of the computed numbers, never calculating them itself
+  - Full sample prompts and schemas sent to the model: [sample-llm-prompts.md](sample-llm-prompts.md)
 - **Tools in the ontology:** each tool is a `Tool` with declared inputs and outputs, so the PLA selects by contract and does not care whether it is code or an LLM.
 - **Provenance classes:** `Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `HumanFix`. Each `ToolRun` records the tool, inputs, outputs, timestamps, attempt number, `idempotencyKey`, an `outputSummary` or `runError`, and whether it was agentic, PROV-style, for every call. Human fixes (`hasFix`, `appliedBy`) and gate decisions (`approvedBy` / `rejectedBy`) are recorded the same way. Every term the PLA writes is declared in the ontology; `rfq-agents` keeps only planner metadata (stage, order, requires, produces) in its own namespace.
 - **Human approval gate:** the PLA stops before `render_quote` output is sent anywhere and waits for a person to approve or reject. Agents propose; people approve.

@@ -35,6 +35,7 @@ docs/       concepts, formulas, worked example, simplifications, competency ques
 
 Project write-up (goals, design, PLA, demo, CI/CD): [docs/PROJECT.md](docs/PROJECT.md).
 PLA vocabulary (programs, issues, tools, tool runs, approval gate): [docs/pla-model.md](docs/pla-model.md).
+Sample LLM prompts (what the system sends to Llama for each AI step): [docs/sample-llm-prompts.md](docs/sample-llm-prompts.md).
 
 Ontology size: 49 classes, 47 object properties, 55 datatype properties in the `rfq:`
 namespace (plus 2 classes and 5 properties reused from W3C PROV-O), and 11 individuals
