@@ -37,3 +37,17 @@ def test_cq7_manual_review():
 
 def test_cq8_freight():
     assert run("cq8-freight-by-incoterm.rq") == [("RFQ-1001", "DAP", "true", "Named place of destination, ready for unloading")]
+
+
+def test_cq9_open_issues():
+    assert run("cq9-open-issues.rq") == [
+        ("PRG-1002", "ISS-1002-1", "blocker", "human:estimator", "validate_rfq"),
+        ("PRG-1002", "ISS-1002-2", "blocker", "human:estimator", "validate_rfq")]
+
+
+def test_cq10_tool_runs_by_kind():
+    assert run("cq10-tool-runs-by-kind.rq") == [("agentic", "3", "1", "1"), ("deterministic", "2", "0", "0")]
+
+
+def test_cq11_unapproved_quotes():
+    assert run("cq11-unapproved-quotes.rq") == [("Q-1002-A", "awaiting approval", "pending")]

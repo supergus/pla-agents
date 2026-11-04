@@ -12,7 +12,9 @@ ONTOLOGY_FILES = sorted((ROOT / "ontology").glob("*.ttl"))
 REFERENCE = ROOT / "data" / "reference.ttl"
 RFQ_1001 = ROOT / "data" / "rfq-1001.ttl"
 RFQ_1002 = ROOT / "data" / "rfq-1002-incomplete.ttl"
+PLA_RUN = ROOT / "data" / "pla-run-1002.ttl"
 SHAPES = ROOT / "shapes" / "rfq-completeness.ttl"
+PLA_SHAPES = ROOT / "shapes" / "pla-shapes.ttl"
 
 
 def load(*paths, ontology=True) -> Graph:
@@ -27,4 +29,4 @@ def load(*paths, ontology=True) -> Graph:
 
 
 def all_data() -> Graph:
-    return load(REFERENCE, RFQ_1001, RFQ_1002)
+    return load(REFERENCE, RFQ_1001, RFQ_1002, PLA_RUN)

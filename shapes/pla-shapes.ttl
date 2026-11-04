@@ -1,0 +1,41 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix shp:  <https://supergus.github.io/rfq-ontology/shapes#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Closed-world checks on PLA run records. The PLA runs these before writing a tool result back.
+
+shp:ToolRunShape a sh:NodeShape ;
+    rdfs:label "tool run record" ;
+    sh:targetClass rfq:ToolRun ;
+    sh:property [ sh:path rfq:toolRunOf ; sh:class rfq:Tool ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "TOOL RUN has no tool" ] ,
+                [ sh:path rfq:runStatus ; sh:in ( "succeeded" "failed" "running" ) ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "TOOL RUN has no valid status" ] ,
+                [ sh:path rfq:attemptNumber ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "TOOL RUN has no attempt number" ] ,
+                [ sh:path rfq:runInProgram ; sh:class rfq:Program ; sh:minCount 1 ; sh:message "TOOL RUN has no program" ] .
+
+shp:RetryShape a sh:NodeShape ;
+    rdfs:label "retry record" ;
+    sh:targetSubjectsOf rfq:retryOf ;
+    sh:property [ sh:path rfq:attemptNumber ; sh:minInclusive 2 ; sh:message "RETRY must have attempt number 2 or more" ] .
+
+shp:IssueShape a sh:NodeShape ;
+    rdfs:label "issue record" ;
+    sh:targetClass rfq:Issue ;
+    sh:property [ sh:path rfq:issueStatus ; sh:in ( "open" "resolved" ) ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "ISSUE has no valid status" ] ,
+                [ sh:path rfq:raisedBy ; sh:minCount 1 ; sh:message "ISSUE has no raisedBy" ] ,
+                [ sh:path rfq:issueSeverity ; sh:in ( "blocker" "warning" "info" ) ; sh:maxCount 1 ; sh:message "ISSUE has an invalid severity" ] .
+
+shp:SentQuoteShape a sh:NodeShape ;
+    rdfs:label "sent quote approval" ;
+    sh:targetClass rfq:Quote ;
+    sh:sparql [
+        sh:message "QUOTE sent without an approved gate" ;
+        sh:prefixes rfq: ;
+        sh:select """
+            SELECT $this WHERE {
+              $this rfq:quoteStatus "sent" .
+              FILTER NOT EXISTS { ?g rfq:gateForQuote $this ; rfq:gateDecision "approved" }
+            }""" ] .
+
+rfq: sh:declare [ sh:prefix "rfq" ; sh:namespace "https://supergus.github.io/rfq-ontology/ns#"^^xsd:anyURI ] .

@@ -34,4 +34,4 @@ def test_labels_unique():
 def test_toy_size():
     g = load()
     n_classes = len(_terms(g, (OWL.Class,)))
-    assert 25 <= n_classes <= 40, n_classes
+    assert 25 <= n_classes <= 50, n_classes

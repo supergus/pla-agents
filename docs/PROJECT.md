@@ -129,7 +129,7 @@ Biggest cost driver: weld op 30 on the base plate, $11.25 per bracket. `tests/te
 ```
 rfq-ontology/
 ├── ontology/   rfq.ttl (root, imports all) + rfq-core, rfq-provenance, rfq-package,
-│               rfq-bom, rfq-library, rfq-costing (.ttl) + catalog-v001.xml
+│               rfq-bom, rfq-library, rfq-costing, rfq-pla (.ttl) + catalog-v001.xml
 ├── data/       reference.ttl (library, routings, work centers, rate tables)
 │               rfq-1001.ttl (complete RFQ, worked example, quote revs A and B)
 │               rfq-1002-incomplete.ttl (no Incoterm, no material/finish spec)
@@ -156,7 +156,7 @@ rfq-ontology/
 
 ## 4. The ontology itself
 
-Namespace: `https://supergus.github.io/rfq-ontology/ns#`. Size: **40 classes, 30 object properties, 34 datatype properties** in `rfq:`, plus 2 classes and 4 properties reused from PROV-O, and 11 individuals (6 Incoterms, 3 units of measure, Make, Buy).
+Namespace: `https://supergus.github.io/rfq-ontology/ns#`. Size: **48 classes, 43 object properties, 49 datatype properties** in `rfq:` (including the PLA module), plus 2 classes and 5 properties reused from PROV-O, and 11 individuals (6 Incoterms, 3 units of measure, Make, Buy).
 
 ### Main classes by module
 
@@ -168,6 +168,7 @@ Namespace: `https://supergus.github.io/rfq-ontology/ns#`. Size: **40 classes, 30
 | **bom** | `Product`, `ProductCategory`, `EngineeringBOM`, `BOMLine` (`quantityPer`, `scrapRate`, `sourcingDecision`), `Component`, `SourcingDecision` = {Make, Buy} |
 | **library** | `ComponentLibraryEntry` (`libraryUnitCost`, `costDate`, `costBasisQuantity`), `SimilarityMatch` (`similarityScore`, `similarityMethod`, `confidence`, `manualOverride`, `overrideUnitCost`), `Routing`, `ProcessStep` (`setupHours`, `runHours`, `stepSequence`), `WorkCenter` |
 | **costing** | `RateAssumption` > `WorkCenterRate` / `OverheadRate` / `SGARate` / `MarginTarget` / `FreightRate` (with `effectiveDate`, `rateSource`); `Quote` (`quoteDate`, `validUntil`), `QuotePriceBreak`, `CostEstimate` > `MaterialCost` / `ConversionCost` / `COGS` / `LoadedCost` / `NRECost` / `FreightCost` |
+| **pla** | `Program`, `Issue`, `Task`, `Tool` > `DeterministicTool` / `AgenticTool` (classified from `isAgentic`), `ToolRun` (a `prov:Activity`, with `attemptNumber`, `runStatus`, `retryOf`), `ApprovalGate`; see [pla-model.md](pla-model.md) |
 
 ### Key relationships
 
@@ -293,7 +294,7 @@ The demo is a **live management portal into a PLA run**, laid out like an operat
 |---|---|
 | `supergus/rfq-ontology` public, CI `tests`, protected `main` | Live |
 | This write-up | Live |
-| PLA classes (`Program`, `Issue`, `Task`, `Tool`, `ToolRun`) in the ontology | In progress |
+| PLA classes (`Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `ApprovalGate`) in the ontology (`rfq-pla.ttl`, sample run, SHACL, CQ9 to CQ11) | Live |
 | `supergus/rfq-agents` repo (PLA loop, tools, retries) | In progress |
 | `rfq-demo` v1 console, Pages deploy, pla.chriscouch.net, "Secret?" gate | In progress |
 | `rfq-pla` Worker (Workers AI, rate limits, $20/day cap) | In progress |

@@ -26,3 +26,14 @@ def test_complete_rfq_is_classified(reasoned):
 def test_open_world_does_not_classify_incomplete(reasoned):
     # The reasoner cannot PROVE RFQ-1002 complete, but it also never says it is incomplete.
     assert (EX["RFQ-1002"], RDF.type, RFQ.CompleteRFQ) not in reasoned
+
+
+def test_tools_classified_by_agentic_flag(reasoned):
+    assert (EX["TOOL-parse_rfq_document"], RDF.type, RFQ.AgenticTool) in reasoned
+    assert (EX["TOOL-cost_quote"], RDF.type, RFQ.DeterministicTool) in reasoned
+    assert (EX["TOOL-cost_quote"], RDF.type, RFQ.AgenticTool) not in reasoned
+
+
+def test_tool_run_is_prov_activity(reasoned):
+    from rfqlib import PROV
+    assert (EX["RUN-1002-4"], RDF.type, PROV.Activity) in reasoned

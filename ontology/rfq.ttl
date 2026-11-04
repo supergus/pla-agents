@@ -15,4 +15,5 @@
                 <https://supergus.github.io/rfq-ontology/package> ,
                 <https://supergus.github.io/rfq-ontology/bom> ,
                 <https://supergus.github.io/rfq-ontology/library> ,
-                <https://supergus.github.io/rfq-ontology/costing> .
+                <https://supergus.github.io/rfq-ontology/costing> ,
+                <https://supergus.github.io/rfq-ontology/pla> .

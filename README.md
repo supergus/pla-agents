@@ -22,7 +22,7 @@ vocabulary for one small business process.
 
 ```
 ontology/   rfq.ttl (root, owl:imports all modules) + rfq-core, rfq-provenance, rfq-package,
-            rfq-bom, rfq-library, rfq-costing (.ttl) + catalog-v001.xml (import IRIs -> local files)
+            rfq-bom, rfq-library, rfq-costing, rfq-pla (.ttl) + catalog-v001.xml (import IRIs -> local files)
 data/       reference.ttl (library, routings, work centers, rate tables)
             rfq-1001.ttl (COMPLETE RFQ, bracket BRK-100, worked example, quote revs A and B)
             rfq-1002-incomplete.ttl (INCOMPLETE RFQ: no Incoterm, no material/finish spec)
@@ -34,9 +34,10 @@ docs/       concepts, formulas, worked example, simplifications, competency ques
 ```
 
 Project write-up (goals, design, PLA, demo, CI/CD): [docs/PROJECT.md](docs/PROJECT.md).
+PLA vocabulary (programs, issues, tools, tool runs, approval gate): [docs/pla-model.md](docs/pla-model.md).
 
-Ontology size: 40 classes, 30 object properties, 34 datatype properties in the `rfq:`
-namespace (plus 2 classes and 4 properties reused from W3C PROV-O), and 11 individuals
+Ontology size: 48 classes, 43 object properties, 49 datatype properties in the `rfq:`
+namespace (plus 2 classes and 5 properties reused from W3C PROV-O), and 11 individuals
 (6 Incoterms, 3 units of measure, Make, Buy). Namespace:
 `https://supergus.github.io/rfq-ontology/ns#` (planned GitHub Pages location; not yet published).
 

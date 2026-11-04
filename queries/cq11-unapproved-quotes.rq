@@ -1,0 +1,10 @@
+# CQ11: Which quotes in a PLA program have not passed an approved human gate (so they must not be sent)?
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+
+SELECT ?quote ?status ?decision WHERE {
+  ?quote a rfq:Quote ; rfq:respondsTo ?rfq . ?program rfq:programForRFQ ?rfq .
+  OPTIONAL { ?quote rfq:quoteStatus ?status }
+  OPTIONAL { ?gate rfq:gateForQuote ?quote ; rfq:gateDecision ?decision }
+  FILTER NOT EXISTS { ?g rfq:gateForQuote ?quote ; rfq:gateDecision "approved" }
+}
+ORDER BY ?quote
