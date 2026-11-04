@@ -12,7 +12,7 @@ from pyshacl import validate as shacl_validate
 from rdflib import RDF, RDFS, Graph, Literal, URIRef
 from rdflib.namespace import OWL, XSD
 
-from ..ontology import EX, PLA, RFQ, REPO_ROOT, bind, load_files, resolve_input
+from ..ontology import EX, RFQ, REPO_ROOT, bind, load_files, resolve_input
 from ..retry import FatalError, RetryableError
 from ..schema import SchemaError, validate as schema_validate
 from .base import IssueSpec, ToolContext, ToolResult, tool
@@ -163,7 +163,7 @@ def match_library_part(ctx: ToolContext) -> ToolResult:
         schema_validate(d, MATCH_SCHEMA)
         if d["product_id"] not in candidates:
             raise SchemaError(f"model proposed unknown product {d['product_id']!r}")
-        lm = EX[f"LM-{line.split('#')[-1]}"]
+        lm = EX[f"SM-{line.split('#')[-1]}"]
         rec = {"line": line.split("#")[-1], "product": d["product_id"], "score": d["score"], "method": d["method"]}
         if d["score"] < MATCH_SCORE_MIN:
             issues.append(IssueSpec(f"match:{line}", f"{line.split('#')[-1]}: best match {d['product_id']} scored "
@@ -171,16 +171,18 @@ def match_library_part(ctx: ToolContext) -> ToolResult:
             rec["written"] = False
         else:
             add.add((line, RFQ.forProduct, EX[d["product_id"]]))
-            add.add((lm, RDF.type, PLA.LineMatch)); add.add((lm, RDFS.label, Literal(f"Match {line.split('#')[-1]} to {d['product_id']}")))
-            add.add((lm, PLA.forLine, line)); add.add((lm, PLA.matchedProduct, EX[d["product_id"]]))
-            add.add((lm, PLA.matchScore, Literal(Decimal(str(d["score"])), datatype=XSD.decimal)))
-            add.add((lm, PLA.matchMethod, Literal(d["method"])))
+            add.add((lm, RDF.type, RFQ.SimilarityMatch)); add.add((lm, RDFS.label, Literal(f"Match {line.split('#')[-1]} to {d['product_id']}")))
+            add.add((lm, RFQ.forRFQLine, line)); add.add((lm, RFQ.matchedProduct, EX[d["product_id"]]))
+            add.add((lm, RFQ.similarityScore, Literal(Decimal(str(d["score"])), datatype=XSD.decimal)))
+            add.add((lm, RFQ.similarityMethod, Literal(d["method"])))
+            add.add((lm, RFQ.confidence, Literal("high" if d["score"] >= 0.85 else "medium")))
+            add.add((lm, RFQ.manualOverride, Literal(False)))
             rec["written"] = True
         out.append(rec)
     if len(add):
         shacl_gate(ctx, add)
     return ToolResult(outputs={"matches": out}, add=add, inputs=inputs,
-                      output_nodes=sorted(set(add.subjects(RDF.type, PLA.LineMatch))), issues=issues,
+                      output_nodes=sorted(set(add.subjects(RDF.type, RFQ.SimilarityMatch))), issues=issues,
                       resolves_prefix="match:", state={"match_ok": not issues})
 
 
@@ -211,6 +213,6 @@ def explain_quote(ctx: ToolContext) -> ToolResult:
     if invented:
         raise SchemaError(f"summary contains numbers not in the computed quote: {invented}")
     add = bind(Graph())
-    add.add((URIRef(ctx.state["quote_iri"]), PLA.summary, Literal(d["summary"])))
+    add.add((URIRef(ctx.state["quote_iri"]), RFQ.quoteSummary, Literal(d["summary"])))
     return ToolResult(outputs={"summary": d["summary"]}, add=add, inputs=[URIRef(ctx.state["quote_iri"])],
                       state={"quote_summary": d["summary"]})

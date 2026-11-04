@@ -23,7 +23,7 @@ Everything the PLA knows is in two artifacts saved together after every step:
 
 | Artifact | Contents |
 |---|---|
-| Program graph (Turtle) | `rfq:Program`, its `Task`s (intake, validate, match, cost, send), `Issue`s, `ToolRun`s (tool, task, program, attempt, status, `prov:startedAtTime`/`endedAtTime`, `toolRunInput`/`toolRunOutput`, `retryOf`, `pla:idempotencyKey`, `pla:outputSummary`/`pla:error`), the `ApprovalGate`, and the RFQ and quote facts the tools wrote |
+| Program graph (Turtle) | `rfq:Program`, its `Task`s (intake, validate, match, cost, send), `Issue`s, `ToolRun`s (tool, task, program, attempt, status, `prov:startedAtTime`/`endedAtTime`, `toolRunInput`/`toolRunOutput`, `retryOf`, `idempotencyKey`, `outputSummary`/`runError`), the `ApprovalGate` (`approvedBy`/`rejectedBy`), `HumanFix`es, and the RFQ and quote facts the tools wrote |
 | State JSON | status, stage, RFQ data version, idempotency ledger (`done`), attempt counters, the in-flight step, issue index, event log |
 
 The graph is checked against the ontology's `shapes/pla-shapes.ttl` after every successful step (every run has
@@ -83,8 +83,10 @@ top of the CLI/API without changing this loop.
 4. Confidence: parsed fields below 0.7 are not written and become Issues; a part match scoring below 0.8 is not
    written and becomes a blocker Issue for the estimator.
 
-Note: part matching is recorded as a `pla:LineMatch` (score, method, matched product) because the ontology's
-`rfq:SimilarityMatch` is defined per BOM line, while the PLA matches an RFQ line to a known product.
+Part matching is recorded as an `rfq:SimilarityMatch` for the RFQ line (`forRFQLine`, `matchedProduct`,
+`similarityScore`, `similarityMethod`, `confidence`, `manualOverride false`), the same class the ontology uses for
+BOM-line matches. Every term the PLA writes is declared in the pinned rfq-ontology; the `pla:` namespace holds only
+planner metadata in `contracts/tools.ttl` (stage, order, requires, produces).
 
 ## Not yet built
 
