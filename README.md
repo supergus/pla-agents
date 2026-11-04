@@ -62,7 +62,9 @@ ROBOT_JAR=robot.jar scripts/reason.sh
 REQUIRE_REASONER=1 python -m pytest -q   # now also runs the reasoner assertions
 ```
 
-CI (`.github/workflows/ci.yml`, workflow **tests**) runs all of the above on every PR.
+CI (`.github/workflows/ci.yml`, workflow **tests**) runs all of the above on every PR and on
+pushes to `main`; the `build/` folder (reasoned graph, ROBOT report, profile reports, quote
+results) is uploaded as a workflow artifact.
 
 ## Worked example result (RFQ-1001, quote Q-1001-B, Incoterm DAP)
 
