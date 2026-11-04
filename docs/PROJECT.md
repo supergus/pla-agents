@@ -227,10 +227,7 @@ Setup cost spread over the lot is why the unit price drops with volume.
 
 ### CI/CD Process
 
-- `main` is protected like homebrew-llm: PR required, required status "Grok Bot QC", enforced for admins, no force pushes or deletions.
-- A direct push to `main` was rejected (GH006).
-- PR #1 moved CI to `setup-java@v5` and merged only after the QC status was posted once `tests` passed.
-- CI runs on the GitHub Actions workflow `tests`. Note: `tests` itself is not a required check; it's enforced by QC being posted only after it passes.
+The process is described once, in section 3 ("CI/CD Process"). Two proof points that it works: a direct push to `main` was rejected (GH006), and PR #1 (moving CI to `setup-java@v5`) merged only after the QC status was posted once `tests` passed. `tests` itself is not a required check; it is enforced by QC being posted only after it passes.
 
 ### Changes from plan
 
@@ -314,11 +311,7 @@ The demo is a **live management portal into a PLA run**, laid out like an operat
 
 ### Pipeline
 
-1. Branch → PR → CI workflow `tests` runs.
-2. The reviewer posts the manual commit status **`Grok Bot QC` = success** only after `tests` passes.
-3. Merge.
-
-`main` is protected on each repo: PR required, required status `Grok Bot QC`, 0 approvals, enforced for admins, no force pushes or deletions. Cloudflare Pages builds a **preview URL on every PR** and goes live on merge to `main`. The `rfq-pla` Worker is deployed by a GitHub Action on merge, like djnigiri-api.
+Every repo uses the same branch, PR, `tests`, "Grok Bot QC" and merge flow, with the same `main` protection, as described in section 3 ("CI/CD Process"). Cloudflare adds two things on top: Pages builds a **preview URL on every PR** and goes live on merge to `main`, and the `rfq-pla` Worker is deployed by a GitHub Action on merge, like djnigiri-api.
 
 ### Who manages what
 
