@@ -33,6 +33,8 @@ tests/      pytest: parsing, labels, SHACL, competency queries, exact worked-exa
 docs/       concepts, formulas, worked example, simplifications, competency questions, sessions, roadmap
 ```
 
+Project write-up (goals, design, PLA, demo, CI/CD): [docs/PROJECT.md](docs/PROJECT.md).
+
 Ontology size: 40 classes, 30 object properties, 34 datatype properties in the `rfq:`
 namespace (plus 2 classes and 4 properties reused from W3C PROV-O), and 11 individuals
 (6 Incoterms, 3 units of measure, Make, Buy). Namespace:
