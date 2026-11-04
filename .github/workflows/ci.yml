@@ -1,0 +1,33 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+      - name: Fetch rfq-ontology at the pinned commit (ontology.lock)
+        run: python scripts/fetch_ontology.py
+      - name: pytest
+        run: python -m pytest -v
+      - name: CLI smoke run (RFQ-1002 with injected failure, fix, approve)
+        env:
+          RFQ_AGENTS_DB: runs/ci.sqlite
+        run: |
+          python -m rfq_agents run --rfq data/rfq-1002-incomplete.ttl --run-id ci --quote-date 2026-10-27 --base-delay 0
+          python -m rfq_agents run --resume ci --fix data/fixes/rfq-1002-fix.ttl --inject-failure match_library_part:1 --base-delay 0
+          python -m rfq_agents run --resume ci --approve --by ci

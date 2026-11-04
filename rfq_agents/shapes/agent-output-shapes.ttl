@@ -1,0 +1,32 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix pla:  <https://supergus.github.io/rfq-agents/ns#> .
+@prefix shp:  <https://supergus.github.io/rfq-agents/shapes#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# Structural checks on what agentic (LLM-backed) tools propose, run BEFORE their triples are
+# written to the program graph. Completeness is NOT checked here (that is validate_rfq's job);
+# these shapes only reject malformed proposals.
+
+shp:ParsedRFQShape a sh:NodeShape ;
+    sh:targetClass rfq:RFQPackage ;
+    sh:property [ sh:path rfq:identifier ; sh:datatype xsd:string ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "parsed RFQ needs exactly one identifier" ] ,
+                [ sh:path rfq:hasLine ; sh:class rfq:RFQLine ; sh:minCount 1 ; sh:message "parsed RFQ needs at least one line" ] .
+
+shp:ParsedQuantityShape a sh:NodeShape ;
+    sh:targetClass rfq:QuantityBreak ;
+    sh:property [ sh:path rfq:quantity ; sh:datatype xsd:integer ; sh:minExclusive 0 ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "quantity must be one positive integer" ] .
+
+shp:ParsedIncotermShape a sh:NodeShape ;
+    sh:targetSubjectsOf rfq:hasIncoterm ;
+    sh:property [ sh:path rfq:hasIncoterm ; sh:class rfq:Incoterm ; sh:maxCount 1 ; sh:message "Incoterm must be one known Incoterm individual" ] .
+
+shp:LineMatchShape a sh:NodeShape ;
+    sh:targetClass pla:LineMatch ;
+    sh:property [ sh:path pla:matchScore ; sh:datatype xsd:decimal ; sh:minInclusive 0 ; sh:maxInclusive 1 ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "match score must be in [0,1]" ] ,
+                [ sh:path pla:matchMethod ; sh:minCount 1 ; sh:message "match must record its method" ] ,
+                [ sh:path pla:matchedProduct ; sh:class rfq:Product ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "match must name one known product" ] .
+
+shp:MatchedLineShape a sh:NodeShape ;
+    sh:targetSubjectsOf rfq:forProduct ;
+    sh:property [ sh:path ( rfq:forProduct rfq:hasBOM ) ; sh:minCount 1 ; sh:message "matched product must have a BOM" ] .

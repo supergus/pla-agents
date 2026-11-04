@@ -1,0 +1,12 @@
+From: purchasing@northwind.example
+Subject: RFQ-1003 rev A - BRK-300 welded bracket
+
+Hello,
+
+Please quote RFQ-1003 rev A for the BRK-300 welded mounting bracket per drawing BRK-300 rev A.
+Material: ASTM A36 steel plate. Quantities: 250 and 2,500 pieces.
+Delivery by 1 April 2027. Payment Net 30. We'd normally want it delivered to our dock (DAP?) but
+logistics will confirm.
+
+Thanks,
+Northwind Agricultural Equipment

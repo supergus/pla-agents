@@ -1,0 +1,8 @@
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix ex:   <https://supergus.github.io/rfq-ontology/data#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# The estimator's fix for RFQ-1002 after the customer replied: DAP delivery, A36 plate.
+ex:RFQ-1002-DT rfq:hasIncoterm rfq:DAP .
+ex:RFQ-1002 rfq:hasTechnicalRequirement ex:SPEC-1002-A36 .
+ex:SPEC-1002-A36 a rfq:MaterialSpec ; rdfs:label "ASTM A36 steel plate (confirmed by customer)" .
