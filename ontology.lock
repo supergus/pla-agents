@@ -1,4 +1,4 @@
 # Pinned rfq-ontology dependency. Bump `commit` in a PR to upgrade; CI and
 # scripts/fetch_ontology.py check out exactly this commit into vendor/rfq-ontology.
 repo = https://github.com/supergus/rfq-ontology.git
-commit = 99ae449f246122ec85aa1f30dd648fbcd2a56050
+commit = ff69572a57e91a396cb7d1fab2ca83ce1fb09c0a

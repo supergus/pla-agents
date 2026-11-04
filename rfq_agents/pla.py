@@ -23,7 +23,7 @@ from rdflib.namespace import OWL, XSD
 
 from .contracts import Contract, load_contracts
 from .llm import CannedLLMClient
-from .ontology import EX, PLA as PLANS, PROV, RFQ, bind, context_graph, load_files, resolve_input, shapes_path
+from .ontology import EX, PROV, RFQ, bind, context_graph, load_files, resolve_input, shapes_path
 from .planner import DeterministicPlanner, Planner, step_key
 from .retry import FailureInjector, InjectedCrash, RetryPolicy, idempotency_key, is_retryable
 from .store import RunStore
@@ -124,9 +124,9 @@ class PLA:
         state["rfq_version"] += 1
         state["seq"]["fix"] += 1
         f = EX[f"FIX-{run_id}-{state['seq']['fix']}"]
-        g.add((f, RDF.type, PROV.Entity)); g.add((f, RDFS.label, Literal(f"Human fix {state['seq']['fix']} from {Path(fix_path).name}")))
-        g.add((f, PLANS.appliedBy, Literal(by))); g.add((f, PROV.generatedAtTime, self._now()))
-        g.add((URIRef(state["program_iri"]), PLANS.hasFix, f))
+        g.add((f, RDF.type, RFQ.HumanFix)); g.add((f, RDFS.label, Literal(f"Human fix {state['seq']['fix']} from {Path(fix_path).name}")))
+        g.add((f, RFQ.appliedBy, Literal(by))); g.add((f, PROV.generatedAtTime, self._now()))
+        g.add((URIRef(state["program_iri"]), RFQ.hasFix, f))
         state["status"] = "running"
         self._event(state, "fix_applied", file=fix_path, by=by, triples=len(fix), rfq_version=state["rfq_version"])
         self._save(state, g, f"fix {state['seq']['fix']}")
@@ -162,7 +162,7 @@ class PLA:
         gate, quote = EX[f"GATE-{run_id}"], URIRef(state["quote_iri"])
         decision = "approved" if approve else "rejected"
         self._set1(g, gate, RFQ.gateDecision, Literal(decision))
-        g.add((gate, RFQ.approvedBy if approve else PLANS.rejectedBy, Literal(by)))
+        g.add((gate, RFQ.approvedBy if approve else RFQ.rejectedBy, Literal(by)))
         g.add((gate, RFQ.decidedAtTime, self._now()))
         state["gate_decision"] = decision
         if approve:
@@ -267,7 +267,7 @@ class PLA:
         g.add((run, RFQ.attemptNumber, Literal(attempt, datatype=XSD.integer)))
         g.add((run, RFQ.runStatus, Literal("running")))
         g.add((run, PROV.startedAtTime, self._now()))
-        g.add((run, PLANS.idempotencyKey, Literal(idem)))
+        g.add((run, RFQ.idempotencyKey, Literal(idem)))
         if retry_of:
             g.add((run, RFQ.retryOf, URIRef(retry_of)))
         state["runs"].append({"iri": str(run), "tool": c.name, "agentic": c.agentic, "attempt": attempt,
@@ -282,10 +282,10 @@ class PLA:
         rec.update(status=status, ended=str(self._now()))
         if outputs is not None:
             rec["outputs"] = outputs
-            g.add((run, PLANS.outputSummary, Literal(json.dumps(outputs, sort_keys=True, default=str)[:4000])))
+            g.add((run, RFQ.outputSummary, Literal(json.dumps(outputs, sort_keys=True, default=str)[:4000])))
         if error:
             rec["error"] = error
-            g.add((run, PLANS.error, Literal(error[:1000])))
+            g.add((run, RFQ.runError, Literal(error[:1000])))
 
     def _recover_inflight(self, state: dict, g: Graph) -> None:
         """A step that was running when the process died: record it as failed and let the retry logic

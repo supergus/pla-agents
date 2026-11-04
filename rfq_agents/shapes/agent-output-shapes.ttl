@@ -1,6 +1,5 @@
 @prefix sh:   <http://www.w3.org/ns/shacl#> .
 @prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
-@prefix pla:  <https://supergus.github.io/rfq-agents/ns#> .
 @prefix shp:  <https://supergus.github.io/rfq-agents/shapes#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 
@@ -21,11 +20,13 @@ shp:ParsedIncotermShape a sh:NodeShape ;
     sh:targetSubjectsOf rfq:hasIncoterm ;
     sh:property [ sh:path rfq:hasIncoterm ; sh:class rfq:Incoterm ; sh:maxCount 1 ; sh:message "Incoterm must be one known Incoterm individual" ] .
 
+# RFQ-line matches only (BOM-line SimilarityMatches in the context are checked by the ontology shapes).
 shp:LineMatchShape a sh:NodeShape ;
-    sh:targetClass pla:LineMatch ;
-    sh:property [ sh:path pla:matchScore ; sh:datatype xsd:decimal ; sh:minInclusive 0 ; sh:maxInclusive 1 ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "match score must be in [0,1]" ] ,
-                [ sh:path pla:matchMethod ; sh:minCount 1 ; sh:message "match must record its method" ] ,
-                [ sh:path pla:matchedProduct ; sh:class rfq:Product ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "match must name one known product" ] .
+    sh:targetSubjectsOf rfq:forRFQLine ;
+    sh:property [ sh:path rfq:similarityScore ; sh:datatype xsd:decimal ; sh:minInclusive 0 ; sh:maxInclusive 1 ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "match score must be in [0,1]" ] ,
+                [ sh:path rfq:similarityMethod ; sh:minCount 1 ; sh:message "match must record its method" ] ,
+                [ sh:path rfq:matchedProduct ; sh:class rfq:Product ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "match must name one known product" ] ,
+                [ sh:path rfq:forRFQLine ; sh:class rfq:RFQLine ; sh:maxCount 1 ; sh:message "match must be for one RFQ line" ] .
 
 shp:MatchedLineShape a sh:NodeShape ;
     sh:targetSubjectsOf rfq:forProduct ;
