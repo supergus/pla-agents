@@ -1,0 +1,12 @@
+# CQ2: Which BOM lines are make and which are buy?
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX ex:   <https://supergus.github.io/rfq-ontology/data#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT ?product ?line ?component ?decision WHERE {
+  ?product rfq:hasBOM/rfq:hasBOMLine ?line .
+  ?line rfq:ofComponent/rdfs:label ?component ;
+        rfq:sourcingDecision/rdfs:label ?decision .
+}
+ORDER BY ?product ?line

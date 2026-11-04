@@ -1,0 +1,72 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix ex:   <https://supergus.github.io/rfq-ontology/data#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+
+<https://supergus.github.io/rfq-ontology/data/reference> a owl:Ontology ;
+    rdfs:label "data/reference (example data)" ;
+    owl:imports <https://supergus.github.io/rfq-ontology/rfq> .
+
+# Reference data: our component library, routings, work centers and rate tables.
+# Synthetic numbers for the tutorial.
+
+# ---------- Work centers and versioned rates ----------
+ex:WC-LASER a rfq:WorkCenter ; rdfs:label "Laser cutter" ; rfq:identifier "WC-LASER" .
+ex:WC-BRAKE a rfq:WorkCenter ; rdfs:label "Press brake" ; rfq:identifier "WC-BRAKE" .
+ex:WC-WELD  a rfq:WorkCenter ; rdfs:label "Robotic weld cell" ; rfq:identifier "WC-WELD" .
+
+ex:WCR-LASER-2026 a rfq:WorkCenterRate ; rdfs:label "Laser rate FY2026" ;
+    rfq:forWorkCenter ex:WC-LASER ; rfq:laborRatePerHour 45.00 ; rfq:machineRatePerHour 60.00 ; rfq:burdenRatePerHour 15.00 ;
+    rfq:effectiveDate "2026-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "FY2026 standard cost study" .
+ex:WCR-BRAKE-2026 a rfq:WorkCenterRate ; rdfs:label "Press brake rate FY2026" ;
+    rfq:forWorkCenter ex:WC-BRAKE ; rfq:laborRatePerHour 40.00 ; rfq:machineRatePerHour 35.00 ; rfq:burdenRatePerHour 15.00 ;
+    rfq:effectiveDate "2026-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "FY2026 standard cost study" .
+ex:WCR-WELD-2025 a rfq:WorkCenterRate ; rdfs:label "Weld cell rate FY2025 (stale)" ;
+    rfq:forWorkCenter ex:WC-WELD ; rfq:laborRatePerHour 40.00 ; rfq:machineRatePerHour 16.00 ; rfq:burdenRatePerHour 14.00 ;
+    rfq:effectiveDate "2025-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "FY2025 standard cost study" ;
+    rfq:isSupersededBy ex:WCR-WELD-2026 .
+ex:WCR-WELD-2026 a rfq:WorkCenterRate ; rdfs:label "Weld cell rate FY2026" ;
+    rfq:forWorkCenter ex:WC-WELD ; rfq:laborRatePerHour 42.00 ; rfq:machineRatePerHour 18.00 ; rfq:burdenRatePerHour 15.00 ;
+    rfq:effectiveDate "2026-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "FY2026 standard cost study" .
+
+ex:OH-2026 a rfq:OverheadRate ; rdfs:label "Factory overhead FY2026" ; rfq:fractionOfCOGS 0.12 ;
+    rfq:effectiveDate "2026-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "FY2026 budget" .
+ex:SGA-2026 a rfq:SGARate ; rdfs:label "SG&A FY2026" ; rfq:fractionOfCOGS 0.10 ;
+    rfq:effectiveDate "2026-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "FY2026 budget" .
+
+ex:CAT-BRACKETS a rfq:ProductCategory ; rdfs:label "Structural brackets" .
+ex:CAT-ENCLOSURES a rfq:ProductCategory ; rdfs:label "Sheet-metal enclosures" .
+ex:MT-BRACKETS-2026 a rfq:MarginTarget ; rdfs:label "Bracket margin target FY2026" ;
+    rfq:forCategory ex:CAT-BRACKETS ; rfq:targetMarginOnPrice 0.25 ;
+    rfq:effectiveDate "2026-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "FY2026 pricing policy" .
+ex:MT-ENCLOSURES-2026 a rfq:MarginTarget ; rdfs:label "Enclosure margin target FY2026" ;
+    rfq:forCategory ex:CAT-ENCLOSURES ; rfq:targetMarginOnPrice 0.30 ;
+    rfq:effectiveDate "2026-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "FY2026 pricing policy" .
+
+ex:FR-DOMESTIC-2026 a rfq:FreightRate ; rdfs:label "Domestic LTL freight FY2026" ; rfq:freightPerUnit 0.80 ;
+    rfq:effectiveDate "2026-01-01T00:00:00"^^xsd:dateTime ; rfq:rateSource "Carrier contract 2026" .
+
+# ---------- Component library ----------
+ex:LIB-PLT-210 a rfq:ComponentLibraryEntry ; rdfs:label "Base plate 210 x 150 x 6 mm (library)" ;
+    rfq:identifier "PLT-210" ; rfq:libraryUnitCost 4.00 ; rfq:costDate "2026-03-15T00:00:00"^^xsd:dateTime ; rfq:costBasisQuantity 500 ;
+    rfq:hasRouting ex:R-PLT-210 .
+ex:R-PLT-210 a rfq:Routing ; rdfs:label "Routing PLT-210" ;
+    rfq:hasStep ex:R-PLT-210-10 , ex:R-PLT-210-20 , ex:R-PLT-210-30 .
+ex:R-PLT-210-10 a rfq:ProcessStep ; rdfs:label "PLT-210 op 10 laser cut" ; rfq:stepSequence 10 ; rfq:atWorkCenter ex:WC-LASER ; rfq:setupHours 0.50 ; rfq:runHours 0.05 .
+ex:R-PLT-210-20 a rfq:ProcessStep ; rdfs:label "PLT-210 op 20 bend" ; rfq:stepSequence 20 ; rfq:atWorkCenter ex:WC-BRAKE ; rfq:setupHours 0.75 ; rfq:runHours 0.04 .
+ex:R-PLT-210-30 a rfq:ProcessStep ; rdfs:label "PLT-210 op 30 weld gussets" ; rfq:stepSequence 30 ; rfq:atWorkCenter ex:WC-WELD ; rfq:setupHours 0.50 ; rfq:runHours 0.15 .
+
+ex:LIB-GUS-033 a rfq:ComponentLibraryEntry ; rdfs:label "Triangular gusset 6 mm (library)" ;
+    rfq:identifier "GUS-033" ; rfq:libraryUnitCost 1.50 ; rfq:costDate "2026-02-02T00:00:00"^^xsd:dateTime ; rfq:costBasisQuantity 1000 ;
+    rfq:hasRouting ex:R-GUS-033 .
+ex:R-GUS-033 a rfq:Routing ; rdfs:label "Routing GUS-033" ; rfq:hasStep ex:R-GUS-033-10 .
+ex:R-GUS-033-10 a rfq:ProcessStep ; rdfs:label "GUS-033 op 10 laser cut" ; rfq:stepSequence 10 ; rfq:atWorkCenter ex:WC-LASER ; rfq:setupHours 0.25 ; rfq:runHours 0.02 .
+
+ex:LIB-BLT-M8 a rfq:ComponentLibraryEntry ; rdfs:label "Hex bolt M8 x 25, zinc (library)" ;
+    rfq:identifier "BLT-M8x25" ; rfq:libraryUnitCost 0.12 ; rfq:costDate "2026-06-01T00:00:00"^^xsd:dateTime ; rfq:costBasisQuantity 10000 .
+ex:LIB-BSH-12 a rfq:ComponentLibraryEntry ; rdfs:label "Bronze bushing 12 mm (library)" ;
+    rfq:identifier "BSH-12" ; rfq:libraryUnitCost 0.85 ; rfq:costDate "2025-11-20T00:00:00"^^xsd:dateTime ; rfq:costBasisQuantity 2000 .
+

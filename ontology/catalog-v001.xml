@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog prefer="public" xmlns="urn:oasis:names:tc:entity:xmlns:1.0:catalog">
+  <uri name="https://supergus.github.io/rfq-ontology/core" uri="rfq-core.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/provenance" uri="rfq-provenance.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/package" uri="rfq-package.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/bom" uri="rfq-bom.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/library" uri="rfq-library.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/costing" uri="rfq-costing.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/rfq" uri="rfq.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/data/reference" uri="../data/reference.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/data/rfq-1001" uri="../data/rfq-1001.ttl"/>
+  <uri name="https://supergus.github.io/rfq-ontology/data/rfq-1002" uri="../data/rfq-1002-incomplete.ttl"/>
+</catalog>

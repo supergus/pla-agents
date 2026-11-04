@@ -1,0 +1,92 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix ex:   <https://supergus.github.io/rfq-ontology/data#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+
+<https://supergus.github.io/rfq-ontology/data/rfq-1001> a owl:Ontology ;
+    rdfs:label "data/rfq-1001 (example data)" ;
+    owl:imports <https://supergus.github.io/rfq-ontology/rfq> , <https://supergus.github.io/rfq-ontology/data/reference> .
+
+# RFQ-1001: a COMPLETE RFQ for a welded mounting bracket, with the EBOM, recorded
+# similarity matches, NRE, and an earlier (superseded, stale-rate) quote revision A.
+
+ex:NORTHWIND a rfq:Customer ; rdfs:label "Northwind Agricultural Equipment" .
+
+ex:RFQ-1001 a rfq:RFQPackage ; rdfs:label "RFQ-1001 rev B" ;
+    rfq:identifier "RFQ-1001" ; rfq:revision "B" ; rfq:receivedDate "2026-10-20T00:00:00"^^xsd:dateTime ;
+    rfq:issuedBy ex:NORTHWIND ;
+    rfq:hasCommercialTerms ex:RFQ-1001-CT ;
+    rfq:hasDeliveryTerms ex:RFQ-1001-DT ;
+    rfq:hasTechnicalRequirement ex:DWG-BRK-100 , ex:SPEC-A36 , ex:SPEC-POWDER ;
+    rfq:hasLine ex:RFQ-1001-L1 .
+ex:RFQ-1001-CT a rfq:CommercialTerms ; rdfs:label "RFQ-1001 commercial terms" ; rfq:paymentTerms "Net 60" .
+ex:RFQ-1001-DT a rfq:DeliveryTerms ; rdfs:label "RFQ-1001 delivery terms" ;
+    rfq:hasIncoterm rfq:DAP ; rfq:requestedDeliveryDate "2027-02-15T00:00:00"^^xsd:dateTime .
+ex:DWG-BRK-100 a rfq:Drawing ; rdfs:label "Drawing BRK-100 rev C" .
+ex:SPEC-A36 a rfq:MaterialSpec ; rdfs:label "ASTM A36 steel plate" .
+ex:SPEC-POWDER a rfq:FinishSpec ; rdfs:label "Black powder coat, 60-80 microns" .
+
+ex:RFQ-1001-L1 a rfq:RFQLine ; rdfs:label "RFQ-1001 line 1: BRK-100 bracket" ;
+    rfq:forProduct ex:BRK-100 ;
+    rfq:hasQuantityBreak ex:QB-100 , ex:QB-1000 , ex:QB-10000 ;
+    rfq:hasNRE ex:NRE-FIXTURE , ex:NRE-FAI .
+ex:QB-100 a rfq:QuantityBreak ; rdfs:label "Qty 100" ; rfq:quantity 100 .
+ex:QB-1000 a rfq:QuantityBreak ; rdfs:label "Qty 1,000" ; rfq:quantity 1000 .
+ex:QB-10000 a rfq:QuantityBreak ; rdfs:label "Qty 10,000" ; rfq:quantity 10000 .
+
+ex:NRE-FIXTURE a rfq:NRECost ; rdfs:label "Weld fixture (tooling)" ; rfq:amountUSD 1500.00 .
+ex:NRE-FAI a rfq:NRECost ; rdfs:label "First-article inspection" ; rfq:amountUSD 350.00 .
+
+# ---------- Product and EBOM ----------
+ex:BRK-100 a rfq:Product ; rdfs:label "BRK-100 welded mounting bracket" ;
+    rfq:inCategory ex:CAT-BRACKETS ; rfq:hasBOM ex:EBOM-BRK-100 .
+ex:EBOM-BRK-100 a rfq:EngineeringBOM ; rdfs:label "EBOM BRK-100" ;
+    rfq:hasBOMLine ex:BL-1 , ex:BL-2 , ex:BL-3 , ex:BL-4 , ex:BL-5 .
+
+ex:C-PLATE a rfq:Component ; rdfs:label "Base plate" .
+ex:C-GUSSET a rfq:Component ; rdfs:label "Gusset" .
+ex:C-BOLT a rfq:Component ; rdfs:label "Hex bolt M8 x 25" .
+ex:C-BUSHING a rfq:Component ; rdfs:label "Bushing 12 mm" .
+ex:C-LABEL a rfq:Component ; rdfs:label "Serial number label" .
+
+ex:BL-1 a rfq:BOMLine ; rdfs:label "BRK-100 line 1 base plate" ; rfq:ofComponent ex:C-PLATE ;
+    rfq:quantityPer 1 ; rfq:scrapRate 0.05 ; rfq:sourcingDecision rfq:Make .
+ex:BL-2 a rfq:BOMLine ; rdfs:label "BRK-100 line 2 gusset" ; rfq:ofComponent ex:C-GUSSET ;
+    rfq:quantityPer 2 ; rfq:scrapRate 0.05 ; rfq:sourcingDecision rfq:Make .
+ex:BL-3 a rfq:BOMLine ; rdfs:label "BRK-100 line 3 bolt" ; rfq:ofComponent ex:C-BOLT ;
+    rfq:quantityPer 4 ; rfq:scrapRate 0.02 ; rfq:sourcingDecision rfq:Buy .
+ex:BL-4 a rfq:BOMLine ; rdfs:label "BRK-100 line 4 bushing" ; rfq:ofComponent ex:C-BUSHING ;
+    rfq:quantityPer 2 ; rfq:scrapRate 0.00 ; rfq:sourcingDecision rfq:Buy .
+ex:BL-5 a rfq:BOMLine ; rdfs:label "BRK-100 line 5 label" ; rfq:ofComponent ex:C-LABEL ;
+    rfq:quantityPer 1 ; rfq:scrapRate 0.10 ; rfq:sourcingDecision rfq:Buy .
+
+# ---------- Recorded similarity matches (computed outside the ontology) ----------
+ex:SM-1 a rfq:SimilarityMatch ; rdfs:label "Match BL-1 to PLT-210" ; rfq:forBOMLine ex:BL-1 ; rfq:matchedEntry ex:LIB-PLT-210 ;
+    rfq:similarityScore 0.92 ; rfq:similarityMethod "attribute-weighted v1" ; rfq:confidence "high" ; rfq:manualOverride false .
+ex:SM-2 a rfq:SimilarityMatch ; rdfs:label "Match BL-2 to GUS-033" ; rfq:forBOMLine ex:BL-2 ; rfq:matchedEntry ex:LIB-GUS-033 ;
+    rfq:similarityScore 0.88 ; rfq:similarityMethod "attribute-weighted v1" ; rfq:confidence "high" ; rfq:manualOverride false .
+ex:SM-3 a rfq:SimilarityMatch ; rdfs:label "Match BL-3 to BLT-M8x25" ; rfq:forBOMLine ex:BL-3 ; rfq:matchedEntry ex:LIB-BLT-M8 ;
+    rfq:similarityScore 0.99 ; rfq:similarityMethod "part-number exact" ; rfq:confidence "high" ; rfq:manualOverride false .
+ex:SM-4 a rfq:SimilarityMatch ; rdfs:label "Match BL-4 to BSH-12" ; rfq:forBOMLine ex:BL-4 ; rfq:matchedEntry ex:LIB-BSH-12 ;
+    rfq:similarityScore 0.71 ; rfq:similarityMethod "attribute-weighted v1" ; rfq:confidence "medium" ; rfq:manualOverride false .
+# No library entry was similar enough for the label: an estimator entered a cost by hand.
+ex:SM-5 a rfq:SimilarityMatch ; rdfs:label "Manual estimate for BL-5" ; rfq:forBOMLine ex:BL-5 ;
+    rfq:similarityMethod "manual" ; rfq:confidence "low" ; rfq:manualOverride true ; rfq:overrideUnitCost 0.25 .
+
+# ---------- Quote revisions ----------
+# Rev A was issued last year with the FY2025 weld rate; rev B (computed by scripts/quote.py) supersedes it.
+ex:Q-1001-A a rfq:Quote ; rdfs:label "Quote Q-1001 rev A" ; rfq:identifier "Q-1001" ; rfq:revision "A" ;
+    rfq:respondsTo ex:RFQ-1001 ; rfq:quoteDate "2025-12-10T00:00:00"^^xsd:dateTime ; rfq:validUntil "2026-01-09T00:00:00"^^xsd:dateTime ;
+    rfq:hasPriceBreak ex:Q-1001-A-PB-1000 .
+ex:Q-1001-A-PB-1000 a rfq:QuotePriceBreak ; rdfs:label "Q-1001 rev A, qty 1,000" ;
+    rfq:forQuantityBreak ex:QB-1000 ; rfq:hasCostEstimate ex:Q-1001-A-CONV-1000 .
+ex:Q-1001-A-CONV-1000 a rfq:ConversionCost ; rdfs:label "Q-1001 rev A conversion cost, qty 1,000" ;
+    rfq:amountUSD 25.0925 ;
+    prov:wasDerivedFrom ex:WCR-LASER-2026 , ex:WCR-BRAKE-2026 , ex:WCR-WELD-2025 .
+
+ex:Q-1001-B a rfq:Quote ; rdfs:label "Quote Q-1001 rev B" ; rfq:identifier "Q-1001" ; rfq:revision "B" ;
+    rfq:respondsTo ex:RFQ-1001 ; rfq:quoteDate "2026-10-27T00:00:00"^^xsd:dateTime ; rfq:validUntil "2026-11-26T00:00:00"^^xsd:dateTime ;
+    rfq:supersedes ex:Q-1001-A .

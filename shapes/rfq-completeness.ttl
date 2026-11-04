@@ -1,0 +1,59 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix shp:  <https://supergus.github.io/rfq-ontology/shapes#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# Closed-world completeness check for RFQ packages. Each critical element is its own
+# property shape with its own message, so a report names exactly what is missing.
+
+shp:RFQCompletenessShape a sh:NodeShape ;
+    rdfs:label "RFQ completeness" ;
+    sh:targetClass rfq:RFQPackage ;
+    sh:property shp:HasCommercialTerms , shp:HasIncoterm , shp:HasDeliveryDate ,
+                shp:HasQuantity , shp:HasDrawing , shp:HasMaterialOrFinishSpec .
+
+shp:HasCommercialTerms a sh:PropertyShape ;
+    sh:path rfq:hasCommercialTerms ; sh:class rfq:CommercialTerms ; sh:minCount 1 ;
+    sh:message "MISSING commercial terms" .
+
+shp:HasIncoterm a sh:PropertyShape ;
+    sh:path ( rfq:hasDeliveryTerms rfq:hasIncoterm ) ; sh:class rfq:Incoterm ; sh:minCount 1 ;
+    sh:message "MISSING Incoterm" .
+
+shp:HasDeliveryDate a sh:PropertyShape ;
+    sh:path ( rfq:hasDeliveryTerms rfq:requestedDeliveryDate ) ; sh:datatype xsd:dateTime ; sh:minCount 1 ;
+    sh:message "MISSING requested delivery date" .
+
+shp:HasQuantity a sh:PropertyShape ;
+    sh:path ( rfq:hasLine rfq:hasQuantityBreak rfq:quantity ) ; sh:datatype xsd:integer ; sh:minCount 1 ;
+    sh:message "MISSING quantity (no RFQ line with a quantity break)" .
+
+shp:HasDrawing a sh:PropertyShape ;
+    sh:path rfq:hasTechnicalRequirement ; sh:qualifiedValueShape [ sh:class rfq:Drawing ] ; sh:qualifiedMinCount 1 ;
+    sh:message "MISSING drawing" .
+
+shp:HasMaterialOrFinishSpec a sh:PropertyShape ;
+    sh:path rfq:hasTechnicalRequirement ;
+    sh:qualifiedValueShape [ sh:or ( [ sh:class rfq:MaterialSpec ] [ sh:class rfq:FinishSpec ] ) ] ;
+    sh:qualifiedMinCount 1 ;
+    sh:message "MISSING material or finish spec" .
+
+# Data-quality shapes for BOM lines and similarity matches.
+shp:BOMLineShape a sh:NodeShape ;
+    rdfs:label "BOM line quality" ;
+    sh:targetClass rfq:BOMLine ;
+    sh:property [ sh:path rfq:ofComponent ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "BOM line needs exactly one component" ] ,
+                [ sh:path rfq:sourcingDecision ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( rfq:Make rfq:Buy ) ; sh:message "BOM line needs exactly one make/buy decision" ] ,
+                [ sh:path rfq:quantityPer ; sh:minCount 1 ; sh:maxCount 1 ; sh:minExclusive 0 ; sh:message "BOM line needs a positive quantity per assembly" ] ,
+                [ sh:path rfq:scrapRate ; sh:maxCount 1 ; sh:minInclusive 0 ; sh:maxExclusive 1 ; sh:message "scrap rate must be a fraction in [0,1)" ] .
+
+shp:SimilarityMatchShape a sh:NodeShape ;
+    rdfs:label "similarity match quality" ;
+    sh:targetClass rfq:SimilarityMatch ;
+    sh:property [ sh:path rfq:forBOMLine ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "match must name exactly one BOM line" ] ,
+                [ sh:path rfq:similarityMethod ; sh:minCount 1 ; sh:message "match must record its method" ] ,
+                [ sh:path rfq:similarityScore ; sh:maxCount 1 ; sh:minInclusive 0 ; sh:maxInclusive 1 ; sh:message "score must be in [0,1]" ] ;
+    sh:or ( [ sh:path rfq:matchedEntry ; sh:minCount 1 ]
+            [ sh:and ( [ sh:path rfq:manualOverride ; sh:hasValue true ] [ sh:path rfq:overrideUnitCost ; sh:minCount 1 ] ) ] ) ;
+    sh:message "match needs a library entry, or a manual override with an override unit cost" .
