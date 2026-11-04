@@ -143,7 +143,7 @@ rfq-ontology/
 └── .github/    workflows/ci.yml (workflow "tests"), PR template
 ```
 
-### Process
+### CI/CD Process
 
 1. Branch from `main`.
 2. Make the change and run the checks locally.
@@ -225,7 +225,7 @@ BRK-100 bracket, DAP, NRE $1,850, freight $0.80 per unit. Unit material is $9.81
 
 Setup cost spread over the lot is why the unit price drops with volume.
 
-### Process
+### CI/CD Process
 
 - `main` is protected like homebrew-llm: PR required, required status "Grok Bot QC", enforced for admins, no force pushes or deletions.
 - A direct push to `main` was rejected (GH006).
