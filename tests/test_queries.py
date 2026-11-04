@@ -51,3 +51,8 @@ def test_cq10_tool_runs_by_kind():
 
 def test_cq11_unapproved_quotes():
     assert run("cq11-unapproved-quotes.rq") == [("Q-1002-A", "awaiting approval", "pending")]
+
+
+def test_cq12_rfq_line_matches():
+    assert run("cq12-rfq-line-matches.rq") == [
+        ("RFQ-1002-L1", "BRK-100", "0.91", "llm:llama-3.3-70b (example)", "high", "RUN-1002-4")]

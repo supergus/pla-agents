@@ -6,7 +6,7 @@
 
 <https://supergus.github.io/rfq-ontology/pla> a owl:Ontology ;
     rdfs:label "RFQ ontology: PLA (Program Lifecycle Agent)" ;
-    rdfs:comment "Vocabulary the Program Lifecycle Agent uses to run a quote program: programs, issues, tasks, tools with contracts, tool runs (PROV activities, with attempts and retries) and the human approval gate." ;
+    rdfs:comment "Vocabulary the Program Lifecycle Agent uses to run a quote program: programs, issues, tasks, tools with contracts, tool runs (PROV activities, with attempts, retries, idempotency keys and errors), human fixes and the human approval gate. Part matches the PLA makes are recorded as rfq:SimilarityMatch (library module)." ;
     owl:versionIRI <https://supergus.github.io/rfq-ontology/0.1.0/pla> ;
     owl:imports <https://supergus.github.io/rfq-ontology/provenance> ,
                 <https://supergus.github.io/rfq-ontology/package> ,
@@ -51,6 +51,10 @@ rfq:ApprovalGate a owl:Class ;
     rdfs:label "approval gate" ;
     rdfs:comment "A human checkpoint the PLA stops at before a quote is sent. Agents propose; people approve or reject." .
 
+rfq:HumanFix a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:label "human fix" ;
+    rdfs:comment "A correction a person applied to a program's RFQ data (for example adding the missing Incoterm), recorded with who applied it and when (prov:generatedAtTime)." .
+
 rfq:Tool owl:disjointWith rfq:Program , rfq:Task , rfq:ApprovalGate , prov:Entity , prov:Activity .
 rfq:Program owl:disjointWith rfq:Task , rfq:ApprovalGate , prov:Entity , prov:Activity .
 
@@ -93,6 +97,10 @@ rfq:hasApprovalGate a owl:ObjectProperty ;
 rfq:gateForQuote a owl:ObjectProperty , owl:FunctionalProperty ;
     rdfs:label "gate for quote" ; rdfs:comment "The quote this gate must approve before it can be sent." ;
     rdfs:domain rfq:ApprovalGate ; rdfs:range rfq:Quote .
+
+rfq:hasFix a owl:ObjectProperty ;
+    rdfs:label "has fix" ; rdfs:comment "A human fix applied to this program's RFQ data." ;
+    rdfs:domain rfq:Program ; rdfs:range rfq:HumanFix .
 
 # ---------- Datatype properties ----------
 rfq:programStage a owl:DatatypeProperty , owl:FunctionalProperty ;
@@ -139,4 +147,22 @@ rfq:decidedAtTime a owl:DatatypeProperty , owl:FunctionalProperty ;
     rdfs:domain rfq:ApprovalGate ; rdfs:range xsd:dateTime .
 rfq:quoteStatus a owl:DatatypeProperty , owl:FunctionalProperty ;
     rdfs:label "quote status" ; rdfs:comment "draft, awaiting approval or sent. A quote may be 'sent' only if an approval gate for it is approved (SHACL)." ;
+    rdfs:domain rfq:Quote ; rdfs:range xsd:string .
+rfq:rejectedBy a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "rejected by" ; rdfs:comment "The person who rejected the gate (counterpart of approved by)." ;
+    rdfs:domain rfq:ApprovalGate ; rdfs:range xsd:string .
+rfq:appliedBy a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "applied by" ; rdfs:comment "Who applied a human fix, e.g. 'human:estimator'." ;
+    rdfs:domain rfq:HumanFix ; rdfs:range xsd:string .
+rfq:idempotencyKey a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "idempotency key" ; rdfs:comment "Key the PLA derives from the tool, its inputs and the RFQ version, so a replayed step after a crash is recognised and not applied twice." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range xsd:string .
+rfq:outputSummary a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "output summary" ; rdfs:comment "Compact JSON summary of what a successful tool run returned (truncated), for the audit trail." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range xsd:string .
+rfq:runError a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "run error" ; rdfs:comment "Error message of a failed tool run (truncated)." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range xsd:string .
+rfq:quoteSummary a owl:DatatypeProperty ;
+    rdfs:label "quote summary" ; rdfs:comment "Plain-language summary of a quote written by the explain_quote tool from the computed numbers. It never computes numbers itself." ;
     rdfs:domain rfq:Quote ; rdfs:range xsd:string .

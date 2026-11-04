@@ -1,0 +1,12 @@
+# CQ12: Which known product did the PLA match each RFQ line to, how similar, by what method, and which tool run wrote it?
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT ?line ?product ?score ?method ?confidence ?run WHERE {
+  ?m a rfq:SimilarityMatch ; rfq:forRFQLine ?line ; rfq:matchedProduct ?product ; rfq:similarityMethod ?method .
+  OPTIONAL { ?m rfq:similarityScore ?score }
+  OPTIONAL { ?m rfq:confidence ?confidence }
+  OPTIONAL { ?run rfq:toolRunOutput ?m }
+}
+ORDER BY ?line

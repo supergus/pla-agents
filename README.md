@@ -27,7 +27,7 @@ data/       reference.ttl (library, routings, work centers, rate tables)
             rfq-1001.ttl (COMPLETE RFQ, bracket BRK-100, worked example, quote revs A and B)
             rfq-1002-incomplete.ttl (INCOMPLETE RFQ: no Incoterm, no material/finish spec)
 shapes/     rfq-completeness.ttl (SHACL, closed-world completeness + BOM/match data quality)
-queries/    cq1..cq8 SPARQL competency queries
+queries/    cq1..cq12 SPARQL competency queries
 scripts/    quote.py (computes the quote from the graph), run_queries.py, reason.sh (ROBOT), rfqlib.py
 tests/      pytest: parsing, labels, SHACL, competency queries, exact worked-example numbers, reasoner
 docs/       concepts, formulas, worked example, simplifications, competency questions, sessions, roadmap
@@ -36,7 +36,7 @@ docs/       concepts, formulas, worked example, simplifications, competency ques
 Project write-up (goals, design, PLA, demo, CI/CD): [docs/PROJECT.md](docs/PROJECT.md).
 PLA vocabulary (programs, issues, tools, tool runs, approval gate): [docs/pla-model.md](docs/pla-model.md).
 
-Ontology size: 48 classes, 43 object properties, 49 datatype properties in the `rfq:`
+Ontology size: 49 classes, 47 object properties, 55 datatype properties in the `rfq:`
 namespace (plus 2 classes and 5 properties reused from W3C PROV-O), and 11 individuals
 (6 Incoterms, 3 units of measure, Make, Buy). Namespace:
 `https://supergus.github.io/rfq-ontology/ns#` (planned GitHub Pages location; not yet published).

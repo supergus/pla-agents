@@ -156,7 +156,7 @@ rfq-ontology/
 
 ## 4. The ontology itself
 
-Namespace: `https://supergus.github.io/rfq-ontology/ns#`. Size: **48 classes, 43 object properties, 49 datatype properties** in `rfq:` (including the PLA module), plus 2 classes and 5 properties reused from PROV-O, and 11 individuals (6 Incoterms, 3 units of measure, Make, Buy).
+Namespace: `https://supergus.github.io/rfq-ontology/ns#`. Size: **49 classes, 47 object properties, 55 datatype properties** in `rfq:` (including the PLA module), plus 2 classes and 5 properties reused from PROV-O, and 11 individuals (6 Incoterms, 3 units of measure, Make, Buy).
 
 ### Main classes by module
 
@@ -166,15 +166,16 @@ Namespace: `https://supergus.github.io/rfq-ontology/ns#`. Size: **48 classes, 43
 | **provenance** | `prov:Entity`, `prov:Activity`, `prov:wasDerivedFrom`, `prov:wasGeneratedBy`, `prov:used`, `CostRollup` |
 | **package** | `RFQPackage`, `RFQLine`, `QuantityBreak`, `CommercialTerms`, `DeliveryTerms`, `Incoterm`, `TechnicalRequirement` > `Drawing` / `MaterialSpec` / `FinishSpec`, defined class `CompleteRFQ` |
 | **bom** | `Product`, `ProductCategory`, `EngineeringBOM`, `BOMLine` (`quantityPer`, `scrapRate`, `sourcingDecision`), `Component`, `SourcingDecision` = {Make, Buy} |
-| **library** | `ComponentLibraryEntry` (`libraryUnitCost`, `costDate`, `costBasisQuantity`), `SimilarityMatch` (`similarityScore`, `similarityMethod`, `confidence`, `manualOverride`, `overrideUnitCost`), `Routing`, `ProcessStep` (`setupHours`, `runHours`, `stepSequence`), `WorkCenter` |
+| **library** | `ComponentLibraryEntry` (`libraryUnitCost`, `costDate`, `costBasisQuantity`), `SimilarityMatch` (`similarityScore`, `similarityMethod`, `confidence`, `manualOverride`, `overrideUnitCost`; for a BOM line → library entry, or an RFQ line → known product via `forRFQLine` / `matchedProduct`), `Routing`, `ProcessStep` (`setupHours`, `runHours`, `stepSequence`), `WorkCenter` |
 | **costing** | `RateAssumption` > `WorkCenterRate` / `OverheadRate` / `SGARate` / `MarginTarget` / `FreightRate` (with `effectiveDate`, `rateSource`); `Quote` (`quoteDate`, `validUntil`), `QuotePriceBreak`, `CostEstimate` > `MaterialCost` / `ConversionCost` / `COGS` / `LoadedCost` / `NRECost` / `FreightCost` |
-| **pla** | `Program`, `Issue`, `Task`, `Tool` > `DeterministicTool` / `AgenticTool` (classified from `isAgentic`), `ToolRun` (a `prov:Activity`, with `attemptNumber`, `runStatus`, `retryOf`), `ApprovalGate`; see [pla-model.md](pla-model.md) |
+| **pla** | `Program`, `Issue`, `Task`, `Tool` > `DeterministicTool` / `AgenticTool` (classified from `isAgentic`), `ToolRun` (a `prov:Activity`, with `attemptNumber`, `runStatus`, `retryOf`), `ApprovalGate` (`approvedBy` / `rejectedBy`), `HumanFix` (`hasFix`, `appliedBy`), run audit terms `idempotencyKey`, `outputSummary`, `runError`, and `quoteSummary`; see [pla-model.md](pla-model.md) |
 
 ### Key relationships
 
 - RFQ package → lines (`hasLine` / `lineOf`) → quantity breaks, product, and delivery terms → one Incoterm (functional).
 - Product → engineering BOM → BOM lines → component, plus one sourcing decision (functional).
 - BOM line ↔ `SimilarityMatch` (`hasSimilarityMatch` / `forBOMLine`) → library entry → routing → process steps → work center.
+- RFQ line ↔ `SimilarityMatch` (`hasLineMatch` / `forRFQLine`) → known product (`matchedProduct`), written by the PLA's `match_library_part` tool run (`toolRunOutput`). SHACL requires each match to be for exactly one BOM line or one RFQ line.
 - Cost estimate → `prov:wasDerivedFrom` → the exact rate rows and matches used, and `prov:wasGeneratedBy` → a `CostRollup` activity.
 - Quote rev B `supersedes` rev A. Newer rate rows supersede older ones (transitive).
 
@@ -256,10 +257,10 @@ The process is described once, in section 3 ("CI/CD Process"). Two proof points 
   - `render_quote`
 - **Agentic tools** (Workers AI Llama 3.3 70B with structured output):
   - `parse_rfq_document`: RFQ PDF or email to draft RFQ; low-confidence fields become Issues, not guesses; canned fallback if the model is down
-  - `match_library_part`: writes a `SimilarityMatch` with score and method
+  - `match_library_part`: writes an `rfq:SimilarityMatch` from the RFQ line to a known product (`forRFQLine`, `matchedProduct`, `similarityScore`, `similarityMethod`), the same class the estimator's BOM-line matches use
   - `explain_quote`: plain-language summary of the computed numbers, never calculating them itself
 - **Tools in the ontology:** each tool is a `Tool` with declared inputs and outputs, so the PLA selects by contract and does not care whether it is code or an LLM.
-- **Provenance classes:** `Program`, `Issue`, `Task`, `Tool`, `ToolRun`. Each `ToolRun` records the tool, inputs, outputs, timestamps, attempt number and whether it was agentic, PROV-style, for every call.
+- **Provenance classes:** `Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `HumanFix`. Each `ToolRun` records the tool, inputs, outputs, timestamps, attempt number, `idempotencyKey`, an `outputSummary` or `runError`, and whether it was agentic, PROV-style, for every call. Human fixes (`hasFix`, `appliedBy`) and gate decisions (`approvedBy` / `rejectedBy`) are recorded the same way. Every term the PLA writes is declared in the ontology; `rfq-agents` keeps only planner metadata (stage, order, requires, produces) in its own namespace.
 - **Human approval gate:** the PLA stops before `render_quote` output is sent anywhere and waits for a person to approve or reject. Agents propose; people approve.
 - **Durability and retries from the start:** run state is persisted after every step; failed tool calls retry with exponential backoff; each failure is logged as an `Issue`; a run resumes where it stopped after a refresh or failure.
 - **Conversational layer (next):** a thin conversational agent can sit on top of the Python PLA to make it "conversant" without changing the PLA itself.
@@ -294,7 +295,8 @@ The demo is a **live management portal into a PLA run**, laid out like an operat
 |---|---|
 | `supergus/rfq-ontology` public, CI `tests`, protected `main` | Live |
 | This write-up | Live |
-| PLA classes (`Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `ApprovalGate`) in the ontology (`rfq-pla.ttl`, sample run, SHACL, CQ9 to CQ11) | Live |
+| PLA classes (`Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `ApprovalGate`, `HumanFix`) and run audit terms in the ontology (`rfq-pla.ttl`, sample run, SHACL, CQ9 to CQ12) | Live |
+| RFQ-line matches recorded as `SimilarityMatch` (`forRFQLine`, `matchedProduct`) | Live |
 | `supergus/rfq-agents` repo (PLA loop, tools, retries) | In progress |
 | `rfq-demo` v1 console, Pages deploy, pla.chriscouch.net, "Secret?" gate | In progress |
 | `rfq-pla` Worker (Workers AI, rate limits, $20/day cap) | In progress |

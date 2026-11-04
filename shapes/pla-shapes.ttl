@@ -3,6 +3,7 @@
 @prefix shp:  <https://supergus.github.io/rfq-ontology/shapes#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 
 # Closed-world checks on PLA run records. The PLA runs these before writing a tool result back.
 
@@ -12,7 +13,37 @@ shp:ToolRunShape a sh:NodeShape ;
     sh:property [ sh:path rfq:toolRunOf ; sh:class rfq:Tool ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "TOOL RUN has no tool" ] ,
                 [ sh:path rfq:runStatus ; sh:in ( "succeeded" "failed" "running" ) ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "TOOL RUN has no valid status" ] ,
                 [ sh:path rfq:attemptNumber ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "TOOL RUN has no attempt number" ] ,
-                [ sh:path rfq:runInProgram ; sh:class rfq:Program ; sh:minCount 1 ; sh:message "TOOL RUN has no program" ] .
+                [ sh:path rfq:runInProgram ; sh:class rfq:Program ; sh:minCount 1 ; sh:message "TOOL RUN has no program" ] ,
+                [ sh:path rfq:idempotencyKey ; sh:datatype xsd:string ; sh:maxCount 1 ; sh:message "TOOL RUN has more than one idempotency key" ] .
+
+shp:FailedRunShape a sh:NodeShape ;
+    rdfs:label "failed run record" ;
+    sh:targetSubjectsOf rfq:runError ;
+    sh:property [ sh:path rfq:runStatus ; sh:hasValue "failed" ; sh:message "RUN ERROR recorded on a run that did not fail" ] .
+
+shp:HumanFixShape a sh:NodeShape ;
+    rdfs:label "human fix record" ;
+    sh:targetClass rfq:HumanFix ;
+    sh:property [ sh:path rfq:appliedBy ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "FIX has no appliedBy" ] ,
+                [ sh:path prov:generatedAtTime ; sh:datatype xsd:dateTime ; sh:minCount 1 ; sh:message "FIX has no time" ] .
+
+shp:GateDeciderShape a sh:NodeShape ;
+    rdfs:label "gate decider" ;
+    sh:targetClass rfq:ApprovalGate ;
+    sh:sparql [
+        sh:message "GATE decider does not match its decision" ;
+        sh:prefixes rfq: ;
+        sh:select """
+            SELECT $this WHERE {
+              { $this rfq:rejectedBy ?p . FILTER NOT EXISTS { $this rfq:gateDecision "rejected" } }
+              UNION { $this rfq:approvedBy ?p . FILTER NOT EXISTS { $this rfq:gateDecision "approved" } }
+            }""" ] .
+
+shp:PLAMatchShape a sh:NodeShape ;
+    rdfs:label "PLA line match" ;
+    sh:targetSubjectsOf rfq:forRFQLine ;
+    sh:property [ sh:path rfq:matchedProduct ; sh:minCount 1 ; sh:message "RFQ LINE MATCH has no product" ] ,
+                [ sh:path rfq:similarityScore ; sh:datatype xsd:decimal ; sh:minCount 1 ; sh:message "RFQ LINE MATCH has no score" ] .
 
 shp:RetryShape a sh:NodeShape ;
     rdfs:label "retry record" ;

@@ -6,14 +6,14 @@
 
 <https://supergus.github.io/rfq-ontology/library> a owl:Ontology ;
     rdfs:label "RFQ ontology: component library and routings" ;
-    rdfs:comment "Our library of previously costed components, routings and work centers, and recorded similarity matches between new BOM lines and library entries." ;
+    rdfs:comment "Our library of previously costed components, routings and work centers, and recorded similarity matches between new BOM lines or RFQ lines and library entries or known products." ;
     owl:imports <https://supergus.github.io/rfq-ontology/bom> , <https://supergus.github.io/rfq-ontology/provenance> .
 
 rfq:ComponentLibraryEntry a owl:Class ;
     rdfs:label "component library entry" ; rdfs:comment "A previously costed component. For bought parts its unit cost is the purchase price; for made parts it is the raw-material cost and it carries a routing." .
 
 rfq:SimilarityMatch a owl:Class ; rdfs:subClassOf prov:Entity ;
-    rdfs:label "similarity match" ; rdfs:comment "A recorded fact that a BOM line was matched to a library entry, with score, method, confidence and an optional manual override. The ontology records matches; an outside tool or a person computes them." .
+    rdfs:label "similarity match" ; rdfs:comment "A recorded fact that something being quoted was matched to something we already know, with score, method, confidence and an optional manual override. Two levels: a BOM line matched to a library entry (forBOMLine + matchedEntry), or an RFQ line matched to a known product (forRFQLine + matchedProduct, written by the PLA's match_library_part tool). Each match is for exactly one BOM line or one RFQ line (SHACL). The ontology records matches; an outside tool, an LLM or a person computes them." .
 
 rfq:Routing a owl:Class ;
     rdfs:label "routing" ; rdfs:comment "The ordered list of process steps used to make a component." .
@@ -31,6 +31,18 @@ rfq:forBOMLine a owl:ObjectProperty , owl:FunctionalProperty ;
 
 rfq:hasSimilarityMatch a owl:ObjectProperty ;
     rdfs:label "has similarity match" ; rdfs:comment "Inverse of for BOM line." .
+
+rfq:forRFQLine a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "for RFQ line" ; rdfs:comment "The RFQ line a similarity match was made for (product-level match, e.g. from the PLA's match_library_part tool)." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range rfq:RFQLine ;
+    owl:inverseOf rfq:hasLineMatch .
+
+rfq:hasLineMatch a owl:ObjectProperty ;
+    rdfs:label "has line match" ; rdfs:comment "Inverse of for RFQ line: the similarity matches recorded for an RFQ line." .
+
+rfq:matchedProduct a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "matched product" ; rdfs:comment "The known product (one with a BOM we can reuse) judged most similar to an RFQ line." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range rfq:Product .
 
 rfq:matchedEntry a owl:ObjectProperty , owl:FunctionalProperty ;
     rdfs:label "matched entry" ; rdfs:comment "The library entry judged most similar." ;

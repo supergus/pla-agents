@@ -51,9 +51,18 @@ shp:BOMLineShape a sh:NodeShape ;
 shp:SimilarityMatchShape a sh:NodeShape ;
     rdfs:label "similarity match quality" ;
     sh:targetClass rfq:SimilarityMatch ;
-    sh:property [ sh:path rfq:forBOMLine ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "match must name exactly one BOM line" ] ,
+    sh:property [ sh:path rfq:forBOMLine ; sh:maxCount 1 ; sh:class rfq:BOMLine ; sh:message "match names more than one BOM line" ] ,
+                [ sh:path rfq:forRFQLine ; sh:maxCount 1 ; sh:class rfq:RFQLine ; sh:message "match names more than one RFQ line" ] ,
+                [ sh:path rfq:matchedProduct ; sh:maxCount 1 ; sh:class rfq:Product ; sh:message "match must name at most one known product" ] ,
                 [ sh:path rfq:similarityMethod ; sh:minCount 1 ; sh:message "match must record its method" ] ,
                 [ sh:path rfq:similarityScore ; sh:maxCount 1 ; sh:minInclusive 0 ; sh:maxInclusive 1 ; sh:message "score must be in [0,1]" ] ;
     sh:or ( [ sh:path rfq:matchedEntry ; sh:minCount 1 ]
+            [ sh:path rfq:matchedProduct ; sh:minCount 1 ]
             [ sh:and ( [ sh:path rfq:manualOverride ; sh:hasValue true ] [ sh:path rfq:overrideUnitCost ; sh:minCount 1 ] ) ] ) ;
-    sh:message "match needs a library entry, or a manual override with an override unit cost" .
+    sh:message "match needs a library entry, a known product, or a manual override with an override unit cost" .
+
+shp:SimilarityMatchSubjectShape a sh:NodeShape ;
+    rdfs:label "similarity match subject" ;
+    sh:targetClass rfq:SimilarityMatch ;
+    sh:xone ( [ sh:path rfq:forBOMLine ; sh:minCount 1 ] [ sh:path rfq:forRFQLine ; sh:minCount 1 ] ) ;
+    sh:message "match must be for exactly one BOM line or one RFQ line, not both" .

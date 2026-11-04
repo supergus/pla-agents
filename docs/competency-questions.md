@@ -15,5 +15,6 @@ Each question is a SPARQL file in `queries/` and an assertion in `tests/test_que
 | CQ9 | Which issues are still open in a program, how severe, who owns them, which tool raised them? | `cq9-open-issues.rq` | PRG-1002: missing Incoterm and missing material spec, both blockers, owned by human:estimator, raised by validate_rfq |
 | CQ10 | How many tool runs were deterministic vs agentic, and how many failed or were retries? | `cq10-tool-runs-by-kind.rq` | agentic 3 runs, 1 failed, 1 retry; deterministic 2 runs |
 | CQ11 | Which quotes in a PLA program have not passed an approved human gate? | `cq11-unapproved-quotes.rq` | Q-1002-A, awaiting approval, gate pending |
+| CQ12 | Which known product did the PLA match each RFQ line to, with what score and method, and which tool run wrote it? | `cq12-rfq-line-matches.rq` | RFQ-1002-L1 → BRK-100, 0.91, llm:llama-3.3-70b (example), RUN-1002-4 |
 
-CQ9 to CQ11 run over the PLA sample run in `data/pla-run-1002.ttl`. CQ4 and CQ6 run over the computed results in `build/quote-results.ttl` (written by `scripts/quote.py`).
+CQ9 to CQ12 run over the PLA sample run in `data/pla-run-1002.ttl`. CQ4 and CQ6 run over the computed results in `build/quote-results.ttl` (written by `scripts/quote.py`).
