@@ -1,5 +1,7 @@
 # Tutorial sessions
 
+> As of Nov 5, 2026 these sessions run against the ontology tree under `pla-agents/ontology/` (the former `rfq-ontology` repo). CI is the repo-root workflow **tests**.
+
 Each session ends with a PR that passes `tests` and gets the `Grok Bot QC` status.
 
 1. **Scope and competency questions.** Walk the RFQ-to-quote process. Write the questions
