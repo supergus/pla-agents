@@ -6,9 +6,9 @@ import urllib.error
 import pytest
 
 from conftest import QUOTE_DATE, open_issues, runs_of
-from rfq_agents.llm import CannedLLMClient, WorkersAIClient, parse_workers_ai_payload
-from rfq_agents.planner import DeterministicPlanner, LLMPlanner
-from rfq_agents.retry import FatalError, RetryableError
+from pla_agents.llm import CannedLLMClient, WorkersAIClient, parse_workers_ai_payload
+from pla_agents.planner import DeterministicPlanner, LLMPlanner
+from pla_agents.retry import FatalError, RetryableError
 
 
 def test_email_intake_low_confidence_becomes_issue(make_pla):
@@ -30,7 +30,7 @@ def test_bad_llm_output_is_rejected_by_schema(make_pla):
     assert "SchemaError" in runs_of(s, "parse_rfq_document")[0]["error"]
     assert s["status"] == "failed"
     _, g = pla.store.load(rid)
-    from rfq_agents.ontology import RFQ
+    from pla_agents.ontology import RFQ
     assert (None, RFQ.identifier, None) not in g  # nothing from the bad proposal was written
 
 

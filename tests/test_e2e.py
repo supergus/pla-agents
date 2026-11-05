@@ -3,7 +3,7 @@ from pyshacl import validate
 from rdflib import Graph, Literal, URIRef
 
 from conftest import QUOTE_DATE, open_issues, runs_of
-from rfq_agents.ontology import RFQ, bind, load_files, shapes_path
+from pla_agents.ontology import RFQ, bind, load_files, shapes_path
 
 
 def full_view(pla, g):
@@ -63,8 +63,8 @@ def test_reject_stops_without_sending(make_pla):
 def test_render_refuses_without_approval(make_pla):
     """Even if a planner asked for it, render_quote itself refuses without an approved gate."""
     import pytest
-    from rfq_agents.retry import FatalError
-    from rfq_agents.tools import REGISTRY, ToolContext
+    from pla_agents.retry import FatalError
+    from pla_agents.tools import REGISTRY, ToolContext
     pla = make_pla()
     rid = pla.start("data/rfq-1001.ttl", run_id="1001-nr", quote_date=QUOTE_DATE)
     s = pla.run(rid)
@@ -80,7 +80,7 @@ def test_competency_queries_see_program(make_pla):
     _, g = pla.store.load(rid)
     q = (pla.context, g)
     v = full_view(pla, g)
-    from rfq_agents.ontology import queries
+    from pla_agents.ontology import queries
     cq9 = next(p for p in queries() if p.stem.startswith("cq9"))
     rows = [r for r in v.query(cq9.read_text()) if str(r[0]).endswith("PRG-1002-cq")]
     assert len(rows) == 2 and {str(r[4]) for r in rows} == {"validate_rfq"}

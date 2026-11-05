@@ -1,0 +1,12 @@
+# CQ3: Which library entry was used to estimate each BOM line, how similar was it, and how was it matched?
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX ex:   <https://supergus.github.io/rfq-ontology/data#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT ?line ?entry ?score ?method ?confidence ?override ?costDate WHERE {
+  ?m rfq:forBOMLine ?line ; rfq:similarityMethod ?method ; rfq:confidence ?confidence ; rfq:manualOverride ?override .
+  OPTIONAL { ?m rfq:matchedEntry ?entry . OPTIONAL { ?entry rfq:costDate ?costDate } }
+  OPTIONAL { ?m rfq:similarityScore ?score }
+}
+ORDER BY ?line

@@ -4,7 +4,7 @@ import random
 import pytest
 
 from conftest import QUOTE_DATE, open_issues, runs_of
-from rfq_agents.retry import FailureInjector, FatalError, RetryableError, RetryPolicy, idempotency_key, is_retryable
+from pla_agents.retry import FailureInjector, FatalError, RetryableError, RetryPolicy, idempotency_key, is_retryable
 
 
 def test_backoff_is_exponential_capped_and_jittered():
@@ -46,7 +46,7 @@ def test_max_attempts_exhaustion_creates_blocker_issue(make_pla):
     assert len(blockers) == 1 and blockers[0]["assigned_to"] == "human:operator"
     assert "retries exhausted" in blockers[0]["label"]
     _, g = pla.store.load(rid)
-    from rfq_agents.ontology import EX, RFQ
+    from pla_agents.ontology import EX, RFQ
     assert str(g.value(EX["TASK-1001-x-cost"], RFQ.taskStatus)) == "failed"
 
     # An operator asks for a retry; the remaining injected failures (2) are absorbed by retries.

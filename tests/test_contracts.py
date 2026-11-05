@@ -1,9 +1,9 @@
 """Tool contracts (data) == ontology Tool individuals == code registry."""
 from rdflib import RDF, RDFS, Graph
 
-from rfq_agents.contracts import load_contracts
-from rfq_agents.ontology import RFQ, ontology_dir
-from rfq_agents.tools import REGISTRY
+from pla_agents.contracts import load_contracts
+from pla_agents.ontology import RFQ, ontology_dir
+from pla_agents.tools import REGISTRY
 
 
 def ontology_tools():

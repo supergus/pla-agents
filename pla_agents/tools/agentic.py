@@ -20,7 +20,7 @@ from .base import IssueSpec, ToolContext, ToolResult, tool
 FIELD_CONFIDENCE_MIN = 0.7
 MATCH_SCORE_MIN = 0.8
 INCOTERMS = ["EXW", "FCA", "FOB", "CIF", "DAP", "DDP"]
-AGENT_SHAPES = REPO_ROOT / "rfq_agents" / "shapes" / "agent-output-shapes.ttl"
+AGENT_SHAPES = REPO_ROOT / "pla_agents" / "shapes" / "agent-output-shapes.ttl"
 
 
 def shacl_gate(ctx: ToolContext, add: Graph) -> None:

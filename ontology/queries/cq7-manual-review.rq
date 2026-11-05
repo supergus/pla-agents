@@ -1,0 +1,17 @@
+# CQ7: Which BOM lines have no library match (or a low-confidence one) and need manual review?
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX ex:   <https://supergus.github.io/rfq-ontology/data#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT ?line ?component ?reason WHERE {
+  ?bom rfq:hasBOMLine ?line . ?line rfq:ofComponent/rdfs:label ?component .
+  {
+    FILTER NOT EXISTS { ?m rfq:forBOMLine ?line ; rfq:matchedEntry ?e }
+    BIND("no library match" AS ?reason)
+  } UNION {
+    ?m rfq:forBOMLine ?line ; rfq:confidence "low" ; rfq:matchedEntry ?e .
+    BIND("low-confidence match" AS ?reason)
+  }
+}
+ORDER BY ?line

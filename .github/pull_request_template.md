@@ -1,6 +1,6 @@
 ## What changed
 
-<!-- One or two sentences. Area: pla / planner / store / retry / llm / tools / contracts / ontology.lock / docs -->
+<!-- One or two sentences. Area: pla / planner / store / retry / llm / tools / contracts / ontology / docs -->
 
 ## Why
 

@@ -1,0 +1,65 @@
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+<https://supergus.github.io/rfq-ontology/bom> a owl:Ontology ;
+    rdfs:label "RFQ ontology: engineering BOM" ;
+    rdfs:comment "Product structure used for quoting: products, the engineering BOM (EBOM), BOM lines with make/buy decision and scrap. The manufacturing BOM is out of scope." ;
+    owl:imports <https://supergus.github.io/rfq-ontology/package> .
+
+rfq:ProductCategory a owl:Class ;
+    rdfs:label "product category" ; rdfs:comment "A product family used to look up the target margin (e.g. structural brackets)." .
+
+rfq:Product a owl:Class ;
+    rdfs:label "product" ; rdfs:comment "The assembly or part the customer asks us to quote." .
+
+rfq:EngineeringBOM a owl:Class ;
+    rdfs:label "engineering BOM" ; rdfs:comment "The bill of materials derived from the customer's design (EBOM). We quote from the EBOM; the manufacturing BOM is deliberately out of scope." .
+
+rfq:BOMLine a owl:Class ;
+    rdfs:label "BOM line" ; rdfs:comment "One component and its quantity per parent assembly within an EBOM, with the make/buy decision and scrap allowance." .
+
+rfq:Component a owl:Class ;
+    rdfs:label "component" ; rdfs:comment "A sub-component of a product. Whether it is made or bought is NOT a property of the component but a decision on the BOM line (a bought part can later be made)." .
+
+rfq:SourcingDecision a owl:Class ;
+    rdfs:label "sourcing decision" ; rdfs:comment "Make or buy. A closed set of two individuals." ;
+    owl:equivalentClass [ a owl:Class ; owl:oneOf ( rfq:Make rfq:Buy ) ] .
+
+rfq:Make a rfq:SourcingDecision ; rdfs:label "make" ; rdfs:comment "We manufacture the component in-house." .
+rfq:Buy a rfq:SourcingDecision ; rdfs:label "buy" ; rdfs:comment "We purchase the component from a supplier." .
+[] a owl:AllDifferent ; owl:distinctMembers ( rfq:Make rfq:Buy ) .
+
+rfq:forProduct a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "for product" ; rdfs:comment "The product an RFQ line asks us to quote." ;
+    rdfs:domain rfq:RFQLine ; rdfs:range rfq:Product .
+
+rfq:inCategory a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "in category" ; rdfs:comment "Product category of a product." ;
+    rdfs:domain rfq:Product ; rdfs:range rfq:ProductCategory .
+
+rfq:hasBOM a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "has BOM" ; rdfs:comment "The engineering BOM of a product." ;
+    rdfs:domain rfq:Product ; rdfs:range rfq:EngineeringBOM .
+
+rfq:hasBOMLine a owl:ObjectProperty ;
+    rdfs:label "has BOM line" ; rdfs:comment "A line of an EBOM." ;
+    rdfs:domain rfq:EngineeringBOM ; rdfs:range rfq:BOMLine .
+
+rfq:ofComponent a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "of component" ; rdfs:comment "The component a BOM line calls for." ;
+    rdfs:domain rfq:BOMLine ; rdfs:range rfq:Component .
+
+rfq:sourcingDecision a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "sourcing decision (property)" ; rdfs:comment "Make or buy decision for this BOM line." ;
+    rdfs:domain rfq:BOMLine ; rdfs:range rfq:SourcingDecision .
+
+rfq:quantityPer a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "quantity per assembly" ; rdfs:comment "Net quantity of the component per one parent product." ;
+    rdfs:domain rfq:BOMLine ; rdfs:range xsd:decimal .
+
+rfq:scrapRate a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "scrap rate" ; rdfs:comment "Material scrap allowance as a fraction (0.05 = 5%). Gross qty = net qty x (1 + scrap rate)." ;
+    rdfs:domain rfq:BOMLine ; rdfs:range xsd:decimal .

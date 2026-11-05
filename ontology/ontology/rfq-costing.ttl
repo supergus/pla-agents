@@ -1,0 +1,110 @@
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+<https://supergus.github.io/rfq-ontology/costing> a owl:Ontology ;
+    rdfs:label "RFQ ontology: costing and quote" ;
+    rdfs:comment "Rate tables (work-center rates, overhead, SG&A, margin, freight), cost estimates per quantity break, and the quote itself. Arithmetic is done in scripts/quote.py, not in OWL." ;
+    owl:imports <https://supergus.github.io/rfq-ontology/library> .
+
+# ---------- Rate tables ----------
+rfq:RateAssumption a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:label "rate assumption" ; rdfs:comment "One versioned row of a rate table, with an effective date and source. A row with a newer superseding row is stale." .
+rfq:WorkCenterRate a owl:Class ; rdfs:subClassOf rfq:RateAssumption ;
+    rdfs:label "work-center rate" ; rdfs:comment "Fully burdened hourly rate of a work center: labor + machine + burden (USD per hour)." .
+rfq:OverheadRate a owl:Class ; rdfs:subClassOf rfq:RateAssumption ;
+    rdfs:label "overhead rate" ; rdfs:comment "Factory overhead as a fraction of COGS (a named simplification; see docs/simplifications.md)." .
+rfq:SGARate a owl:Class ; rdfs:subClassOf rfq:RateAssumption ;
+    rdfs:label "SG&A rate" ; rdfs:comment "Selling, general, administrative and engineering expense as a fraction of COGS." .
+rfq:MarginTarget a owl:Class ; rdfs:subClassOf rfq:RateAssumption ;
+    rdfs:label "margin target" ; rdfs:comment "Target margin ON PRICE for a product category: price = loaded cost / (1 - margin)." .
+rfq:FreightRate a owl:Class ; rdfs:subClassOf rfq:RateAssumption ;
+    rdfs:label "freight rate" ; rdfs:comment "Estimated freight cost per unit shipped, applied only when the Incoterm makes the seller pay freight." .
+[] a owl:AllDisjointClasses ; owl:members ( rfq:WorkCenterRate rfq:OverheadRate rfq:SGARate rfq:MarginTarget rfq:FreightRate ) .
+
+rfq:forWorkCenter a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "for work center" ; rdfs:comment "Work center a rate row applies to." ;
+    rdfs:domain rfq:WorkCenterRate ; rdfs:range rfq:WorkCenter .
+rfq:forCategory a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "for category" ; rdfs:comment "Product category a margin target applies to." ;
+    rdfs:domain rfq:MarginTarget ; rdfs:range rfq:ProductCategory .
+
+rfq:effectiveDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "effective date" ; rdfs:comment "Date from which the rate row applies." ;
+    rdfs:domain rfq:RateAssumption ; rdfs:range xsd:dateTime .
+rfq:rateSource a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "rate source" ; rdfs:comment "Where the rate came from (e.g. 'FY2026 standard cost study')." ;
+    rdfs:domain rfq:RateAssumption ; rdfs:range xsd:string .
+rfq:laborRatePerHour a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "labor rate per hour" ; rdfs:comment "Labor component of a work-center rate (USD/h)." ;
+    rdfs:domain rfq:WorkCenterRate ; rdfs:range xsd:decimal .
+rfq:machineRatePerHour a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "machine rate per hour" ; rdfs:comment "Machine (depreciation, power, maintenance) component of a work-center rate (USD/h)." ;
+    rdfs:domain rfq:WorkCenterRate ; rdfs:range xsd:decimal .
+rfq:burdenRatePerHour a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "burden rate per hour" ; rdfs:comment "Direct burden (fringe, supervision) component of a work-center rate (USD/h)." ;
+    rdfs:domain rfq:WorkCenterRate ; rdfs:range xsd:decimal .
+rfq:fractionOfCOGS a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "fraction of COGS" ; rdfs:comment "Overhead or SG&A as a fraction of COGS (0.12 = 12%)." ;
+    rdfs:range xsd:decimal .
+rfq:targetMarginOnPrice a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "target margin on price" ; rdfs:comment "Margin as a fraction of PRICE, not a markup on cost. 0.25 means price = cost / 0.75 (a 33.3% markup)." ;
+    rdfs:domain rfq:MarginTarget ; rdfs:range xsd:decimal .
+rfq:freightPerUnit a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "freight per unit" ; rdfs:comment "Freight cost per shipped unit (USD)." ;
+    rdfs:domain rfq:FreightRate ; rdfs:range xsd:decimal .
+
+# ---------- Quote and estimates ----------
+rfq:Quote a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:label "quote" ; rdfs:comment "Our priced response to an RFQ package, with a validity date and revision." .
+rfq:QuotePriceBreak a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:label "quote price break" ; rdfs:comment "The price we offer for one (RFQ line, quantity break) pair." .
+rfq:CostEstimate a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:label "cost estimate" ; rdfs:comment "A computed cost amount (USD) belonging to one quote price break, traceable to its inputs via prov:wasDerivedFrom." .
+rfq:MaterialCost a owl:Class ; rdfs:subClassOf rfq:CostEstimate ;
+    rdfs:label "material cost" ; rdfs:comment "Unit material cost including scrap." .
+rfq:ConversionCost a owl:Class ; rdfs:subClassOf rfq:CostEstimate ;
+    rdfs:label "conversion cost" ; rdfs:comment "Unit manufacturing (setup + run) cost at work-center rates." .
+rfq:COGS a owl:Class ; rdfs:subClassOf rfq:CostEstimate ;
+    rdfs:label "cost of goods sold" ; rdfs:comment "Unit material + unit conversion cost." .
+rfq:LoadedCost a owl:Class ; rdfs:subClassOf rfq:CostEstimate ;
+    rdfs:label "loaded cost" ; rdfs:comment "Unit COGS plus overhead and SG&A charges: COGS x (1 + overhead rate + SG&A rate)." .
+rfq:NRECost a owl:Class ; rdfs:subClassOf rfq:CostEstimate ;
+    rdfs:label "NRE cost" ; rdfs:comment "One-time tooling or non-recurring engineering cost (fixtures, programming, first-article inspection), quoted as a separate line, never inside unit price." .
+rfq:FreightCost a owl:Class ; rdfs:subClassOf rfq:CostEstimate ;
+    rdfs:label "freight cost" ; rdfs:comment "Freight for the whole quantity break, present only when the Incoterm makes the seller pay freight." .
+[] a owl:AllDisjointClasses ; owl:members ( rfq:MaterialCost rfq:ConversionCost rfq:COGS rfq:LoadedCost rfq:NRECost rfq:FreightCost ) .
+
+rfq:respondsTo a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "responds to" ; rdfs:comment "The RFQ package (revision) a quote answers." ;
+    rdfs:domain rfq:Quote ; rdfs:range rfq:RFQPackage .
+rfq:hasPriceBreak a owl:ObjectProperty ;
+    rdfs:label "has price break" ; rdfs:comment "A price break of a quote." ;
+    rdfs:domain rfq:Quote ; rdfs:range rfq:QuotePriceBreak .
+rfq:forQuantityBreak a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "for quantity break" ; rdfs:comment "The (RFQ line, quantity) the price break or estimate is for." ;
+    rdfs:range rfq:QuantityBreak .
+rfq:hasCostEstimate a owl:ObjectProperty ;
+    rdfs:label "has cost estimate" ; rdfs:comment "A cost estimate that makes up a price break." ;
+    rdfs:domain rfq:QuotePriceBreak ; rdfs:range rfq:CostEstimate .
+rfq:hasNRE a owl:ObjectProperty ;
+    rdfs:label "has NRE" ; rdfs:comment "A one-time NRE item that applies to an RFQ line." ;
+    rdfs:domain rfq:RFQLine ; rdfs:range rfq:NRECost .
+
+rfq:amountUSD a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "amount (USD)" ; rdfs:comment "Monetary amount of an estimate in US dollars." ;
+    rdfs:domain rfq:CostEstimate ; rdfs:range xsd:decimal .
+rfq:unitPrice a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "unit price" ; rdfs:comment "Quoted price per unit (USD), rounded half-up to the cent." ;
+    rdfs:domain rfq:QuotePriceBreak ; rdfs:range xsd:decimal .
+rfq:totalPrice a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "total price" ; rdfs:comment "unit price x quantity + NRE + freight (USD)." ;
+    rdfs:domain rfq:QuotePriceBreak ; rdfs:range xsd:decimal .
+rfq:quoteDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "quote date" ; rdfs:comment "Date the quote was issued; rates effective on this date are used." ;
+    rdfs:domain rfq:Quote ; rdfs:range xsd:dateTime .
+rfq:validUntil a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "valid until" ; rdfs:comment "Quote expiry date (material prices move)." ;
+    rdfs:domain rfq:Quote ; rdfs:range xsd:dateTime .

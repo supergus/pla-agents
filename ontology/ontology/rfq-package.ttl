@@ -1,0 +1,145 @@
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://supergus.github.io/rfq-ontology/package> a owl:Ontology ;
+    rdfs:label "RFQ ontology: RFQ package" ;
+    rdfs:comment "What the customer sends us: the RFQ package, its lines, quantity breaks, commercial, delivery and technical content." ;
+    owl:imports <https://supergus.github.io/rfq-ontology/core> .
+
+# ---------- Classes ----------
+rfq:RFQPackage a owl:Class ;
+    rdfs:label "RFQ package" ;
+    rdfs:comment "A request for quotation received from a customer, with commercial terms, delivery terms and technical requirements." .
+
+rfq:RFQLine a owl:Class ;
+    rdfs:label "RFQ line" ;
+    rdfs:comment "One product the customer asks us to quote within an RFQ package." .
+
+rfq:QuantityBreak a owl:Class ;
+    rdfs:label "quantity break" ;
+    rdfs:comment "One quantity (e.g. 100, 1,000, 10,000) at which an RFQ line must be priced. Every cost estimate belongs to an (RFQ line, quantity break) pair." .
+
+rfq:CommercialTerms a owl:Class ;
+    rdfs:label "commercial terms" ;
+    rdfs:comment "Commercial conditions of the RFQ (payment terms, currency, quote due date)." .
+
+rfq:DeliveryTerms a owl:Class ;
+    rdfs:label "delivery terms" ;
+    rdfs:comment "Where and when goods must be delivered, including the Incoterm." .
+
+rfq:Incoterm a owl:Class ;
+    rdfs:label "Incoterm" ;
+    rdfs:comment "An Incoterms 2020 rule. Each individual records whether the seller pays main freight and where risk transfers." .
+
+rfq:TechnicalRequirement a owl:Class ;
+    rdfs:label "technical requirement" ;
+    rdfs:comment "Any technical content of the RFQ: drawings, specifications." .
+
+rfq:Drawing a owl:Class ; rdfs:subClassOf rfq:TechnicalRequirement ;
+    rdfs:label "drawing" ;
+    rdfs:comment "A part or assembly drawing or 3D model defining geometry and tolerances." .
+
+rfq:MaterialSpec a owl:Class ; rdfs:subClassOf rfq:TechnicalRequirement ;
+    rdfs:label "material specification" ;
+    rdfs:comment "Specification of the material grade (e.g. ASTM A36 steel)." .
+
+rfq:FinishSpec a owl:Class ; rdfs:subClassOf rfq:TechnicalRequirement ;
+    rdfs:label "finish specification" ;
+    rdfs:comment "Specification of surface finish or coating." .
+
+rfq:Drawing owl:disjointWith rfq:MaterialSpec , rfq:FinishSpec .
+rfq:MaterialSpec owl:disjointWith rfq:FinishSpec .
+
+rfq:CompleteRFQ a owl:Class ;
+    rdfs:label "complete RFQ" ;
+    rdfs:comment "Defined class: an RFQ package that has commercial terms, delivery terms with an Incoterm and a requested delivery date, at least one line with a quantity break, a drawing, and a material or finish spec. A reasoner can PROVE membership, but under the open-world assumption it never concludes that an RFQ is incomplete; use the SHACL shapes for that." ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf (
+            rfq:RFQPackage
+            [ a owl:Restriction ; owl:onProperty rfq:hasCommercialTerms ; owl:someValuesFrom rfq:CommercialTerms ]
+            [ a owl:Restriction ; owl:onProperty rfq:hasDeliveryTerms ; owl:someValuesFrom
+                [ a owl:Class ; owl:intersectionOf ( rfq:DeliveryTerms
+                    [ a owl:Restriction ; owl:onProperty rfq:hasIncoterm ; owl:someValuesFrom rfq:Incoterm ]
+                    [ a owl:Restriction ; owl:onProperty rfq:requestedDeliveryDate ; owl:someValuesFrom xsd:dateTime ] ) ] ]
+            [ a owl:Restriction ; owl:onProperty rfq:hasLine ; owl:someValuesFrom
+                [ a owl:Restriction ; owl:onProperty rfq:hasQuantityBreak ; owl:someValuesFrom rfq:QuantityBreak ] ]
+            [ a owl:Restriction ; owl:onProperty rfq:hasTechnicalRequirement ; owl:someValuesFrom rfq:Drawing ]
+            [ a owl:Restriction ; owl:onProperty rfq:hasTechnicalRequirement ; owl:someValuesFrom
+                [ a owl:Class ; owl:unionOf ( rfq:MaterialSpec rfq:FinishSpec ) ] ]
+        )
+    ] .
+
+# ---------- Object properties ----------
+rfq:issuedBy a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "issued by" ; rdfs:comment "The customer who issued the RFQ package." ;
+    rdfs:domain rfq:RFQPackage ; rdfs:range rfq:Customer .
+
+rfq:hasCommercialTerms a owl:ObjectProperty ;
+    rdfs:label "has commercial terms" ; rdfs:comment "Links an RFQ package to its commercial terms." ;
+    rdfs:domain rfq:RFQPackage ; rdfs:range rfq:CommercialTerms .
+
+rfq:hasDeliveryTerms a owl:ObjectProperty ;
+    rdfs:label "has delivery terms" ; rdfs:comment "Links an RFQ package to its delivery terms." ;
+    rdfs:domain rfq:RFQPackage ; rdfs:range rfq:DeliveryTerms .
+
+rfq:hasIncoterm a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "has Incoterm" ; rdfs:comment "The Incoterm rule that governs delivery." ;
+    rdfs:domain rfq:DeliveryTerms ; rdfs:range rfq:Incoterm .
+
+rfq:hasTechnicalRequirement a owl:ObjectProperty ;
+    rdfs:label "has technical requirement" ; rdfs:comment "Links an RFQ package to a drawing or specification." ;
+    rdfs:domain rfq:RFQPackage ; rdfs:range rfq:TechnicalRequirement .
+
+rfq:hasLine a owl:ObjectProperty ;
+    rdfs:label "has line" ; rdfs:comment "Links an RFQ package to one of its lines." ;
+    rdfs:domain rfq:RFQPackage ; rdfs:range rfq:RFQLine ;
+    owl:inverseOf rfq:lineOf .
+
+rfq:lineOf a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "line of" ; rdfs:comment "Inverse of has line: the RFQ package a line belongs to." .
+
+rfq:hasQuantityBreak a owl:ObjectProperty ;
+    rdfs:label "has quantity break" ; rdfs:comment "Links an RFQ line to a quantity at which it must be priced." ;
+    rdfs:domain rfq:RFQLine ; rdfs:range rfq:QuantityBreak .
+
+# ---------- Datatype properties ----------
+rfq:quantity a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "quantity" ; rdfs:comment "Number of units (assemblies) in a quantity break; also used as the lot size in the toy." ;
+    rdfs:domain rfq:QuantityBreak ; rdfs:range xsd:integer .
+
+rfq:requestedDeliveryDate a owl:DatatypeProperty ;
+    rdfs:label "requested delivery date" ; rdfs:comment "Date by which the customer wants delivery." ;
+    rdfs:domain rfq:DeliveryTerms ; rdfs:range xsd:dateTime .
+
+rfq:receivedDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "received date" ; rdfs:comment "Date we received the RFQ package." ;
+    rdfs:domain rfq:RFQPackage ; rdfs:range xsd:dateTime .
+
+rfq:paymentTerms a owl:DatatypeProperty ;
+    rdfs:label "payment terms" ; rdfs:comment "Payment terms text, e.g. 'Net 60'. Recorded but not priced in the toy." ;
+    rdfs:domain rfq:CommercialTerms ; rdfs:range xsd:string .
+
+rfq:sellerPaysFreight a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "seller pays freight" ; rdfs:comment "True if under this Incoterm the seller pays main carriage, so the quote must include a freight line." ;
+    rdfs:domain rfq:Incoterm ; rdfs:range xsd:boolean .
+
+rfq:riskTransferPoint a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "risk transfer point" ; rdfs:comment "Where risk passes from seller to buyer under this Incoterm." ;
+    rdfs:domain rfq:Incoterm ; rdfs:range xsd:string .
+
+# ---------- Incoterm individuals (Incoterms 2020, simplified) ----------
+rfq:EXW a rfq:Incoterm ; rdfs:label "EXW (Ex Works)" ; rdfs:comment "Buyer collects at seller's premises." ;
+    rfq:sellerPaysFreight false ; rfq:riskTransferPoint "Seller's premises, goods made available" .
+rfq:FCA a rfq:Incoterm ; rdfs:label "FCA (Free Carrier)" ; rdfs:comment "Seller hands goods to buyer's carrier." ;
+    rfq:sellerPaysFreight false ; rfq:riskTransferPoint "Handover to buyer's carrier" .
+rfq:FOB a rfq:Incoterm ; rdfs:label "FOB (Free On Board)" ; rdfs:comment "Sea only; seller loads on board the vessel." ;
+    rfq:sellerPaysFreight false ; rfq:riskTransferPoint "On board vessel at port of shipment" .
+rfq:CIF a rfq:Incoterm ; rdfs:label "CIF (Cost, Insurance and Freight)" ; rdfs:comment "Sea only; seller pays freight and insurance to destination port." ;
+    rfq:sellerPaysFreight true ; rfq:riskTransferPoint "On board vessel at port of shipment" .
+rfq:DAP a rfq:Incoterm ; rdfs:label "DAP (Delivered At Place)" ; rdfs:comment "Seller delivers to named place, unloading and duties excluded." ;
+    rfq:sellerPaysFreight true ; rfq:riskTransferPoint "Named place of destination, ready for unloading" .
+rfq:DDP a rfq:Incoterm ; rdfs:label "DDP (Delivered Duty Paid)" ; rdfs:comment "Seller delivers to named place and pays import duties." ;
+    rfq:sellerPaysFreight true ; rfq:riskTransferPoint "Named place of destination, ready for unloading" .

@@ -1,0 +1,90 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix ex:   <https://supergus.github.io/rfq-ontology/data#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+<https://supergus.github.io/rfq-ontology/data/pla-run-1002> a owl:Ontology ;
+    rdfs:label "data/pla-run-1002 (example PLA run)" ;
+    owl:imports <https://supergus.github.io/rfq-ontology/rfq> , <https://supergus.github.io/rfq-ontology/data/rfq-1002> .
+
+# The PLA's tool catalogue. Tools are typed only as rfq:Tool; the reasoner classifies
+# them as DeterministicTool or AgenticTool from the isAgentic flag.
+
+ex:TOOL-validate_rfq a rfq:Tool ; rdfs:label "validate_rfq" ; rfq:isAgentic false ; rfq:requiresApproval false ;
+    rfq:toolContractInput "RFQ package graph" ; rfq:toolContractOutput "SHACL report; each violation becomes an Issue" .
+ex:TOOL-explode_bom a rfq:Tool ; rdfs:label "explode_bom" ; rfq:isAgentic false ; rfq:requiresApproval false ;
+    rfq:toolContractInput "RFQ line and matched part" ; rfq:toolContractOutput "BOM lines with make/buy and quantities" .
+ex:TOOL-cost_quote a rfq:Tool ; rdfs:label "cost_quote" ; rfq:isAgentic false ; rfq:requiresApproval false ;
+    rfq:toolContractInput "BOM, routing, rate rows, quantity breaks" ; rfq:toolContractOutput "Quote with one price break per quantity and PROV derivations" .
+ex:TOOL-run_competency_queries a rfq:Tool ; rdfs:label "run_competency_queries" ; rfq:isAgentic false ; rfq:requiresApproval false ;
+    rfq:toolContractInput "Program graph" ; rfq:toolContractOutput "SPARQL result rows per competency question" .
+ex:TOOL-render_quote a rfq:Tool ; rdfs:label "render_quote" ; rfq:isAgentic false ; rfq:requiresApproval true ;
+    rfq:toolContractInput "Approved quote graph" ; rfq:toolContractOutput "Customer-facing quote document" .
+ex:TOOL-parse_rfq_document a rfq:Tool ; rdfs:label "parse_rfq_document" ; rfq:isAgentic true ; rfq:requiresApproval false ;
+    rfq:toolContractInput "RFQ PDF or email text" ; rfq:toolContractOutput "Draft RFQ JSON mapped to RDF; low-confidence fields become Issues" .
+ex:TOOL-match_library_part a rfq:Tool ; rdfs:label "match_library_part" ; rfq:isAgentic true ; rfq:requiresApproval false ;
+    rfq:toolContractInput "Part attributes" ; rfq:toolContractOutput "SimilarityMatch with score and method" .
+ex:TOOL-explain_quote a rfq:Tool ; rdfs:label "explain_quote" ; rfq:isAgentic true ; rfq:requiresApproval false ;
+    rfq:toolContractInput "Computed quote numbers" ; rfq:toolContractOutput "Plain-language summary; never computes numbers" .
+
+# Program for RFQ-1002, currently stopped at the approval gate.
+ex:PRG-1002 a rfq:Program ; rdfs:label "Program RFQ-1002" ;
+    rfq:programForRFQ ex:RFQ-1002 ; rfq:programStage "approve" ;
+    rfq:hasTask ex:TASK-1002-intake , ex:TASK-1002-validate , ex:TASK-1002-match , ex:TASK-1002-cost , ex:TASK-1002-send ;
+    rfq:hasIssue ex:ISS-1002-1 , ex:ISS-1002-2 , ex:ISS-1002-3 ;
+    rfq:hasApprovalGate ex:GATE-1002 .
+
+ex:TASK-1002-intake a rfq:Task ; rdfs:label "Intake RFQ-1002" ; rfq:usesTool ex:TOOL-parse_rfq_document ; rfq:taskStatus "done" ; rfq:assignedTo "PLA" .
+ex:TASK-1002-validate a rfq:Task ; rdfs:label "Validate RFQ-1002" ; rfq:usesTool ex:TOOL-validate_rfq ; rfq:taskStatus "done" ; rfq:assignedTo "PLA" .
+ex:TASK-1002-match a rfq:Task ; rdfs:label "Match parts for RFQ-1002" ; rfq:usesTool ex:TOOL-match_library_part ; rfq:taskStatus "done" ; rfq:assignedTo "PLA" .
+ex:TASK-1002-cost a rfq:Task ; rdfs:label "Cost RFQ-1002" ; rfq:usesTool ex:TOOL-cost_quote ; rfq:taskStatus "done" ; rfq:assignedTo "PLA" .
+ex:TASK-1002-send a rfq:Task ; rdfs:label "Send quote for RFQ-1002" ; rfq:usesTool ex:TOOL-render_quote ; rfq:taskStatus "blocked" ; rfq:assignedTo "human:sales" .
+
+# Tool runs. match_library_part failed once (model timeout) and was retried.
+ex:RUN-1002-1 a rfq:ToolRun ; rdfs:label "parse_rfq_document run 1" ;
+    rfq:toolRunOf ex:TOOL-parse_rfq_document ; rfq:forTask ex:TASK-1002-intake ; rfq:runInProgram ex:PRG-1002 ;
+    rfq:attemptNumber 1 ; rfq:runStatus "succeeded" ;
+    prov:startedAtTime "2026-10-28T09:00:00"^^xsd:dateTime ; prov:endedAtTime "2026-10-28T09:00:07"^^xsd:dateTime ;
+    rfq:toolRunOutput ex:RFQ-1002 .
+ex:RUN-1002-2 a rfq:ToolRun ; rdfs:label "validate_rfq run 1" ;
+    rfq:toolRunOf ex:TOOL-validate_rfq ; rfq:forTask ex:TASK-1002-validate ; rfq:runInProgram ex:PRG-1002 ;
+    rfq:attemptNumber 1 ; rfq:runStatus "succeeded" ;
+    prov:startedAtTime "2026-10-28T09:00:08"^^xsd:dateTime ; prov:endedAtTime "2026-10-28T09:00:09"^^xsd:dateTime ;
+    rfq:toolRunInput ex:RFQ-1002 ; rfq:toolRunOutput ex:ISS-1002-1 , ex:ISS-1002-2 .
+ex:RUN-1002-3 a rfq:ToolRun ; rdfs:label "match_library_part run 1 (failed)" ;
+    rfq:toolRunOf ex:TOOL-match_library_part ; rfq:forTask ex:TASK-1002-match ; rfq:runInProgram ex:PRG-1002 ;
+    rfq:attemptNumber 1 ; rfq:runStatus "failed" ; rfq:runError "model timeout after 30 s" ;
+    prov:startedAtTime "2026-10-28T09:00:10"^^xsd:dateTime ; prov:endedAtTime "2026-10-28T09:00:40"^^xsd:dateTime ;
+    rfq:toolRunInput ex:RFQ-1002 ; rfq:toolRunOutput ex:ISS-1002-3 .
+ex:RUN-1002-4 a rfq:ToolRun ; rdfs:label "match_library_part run 2 (retry)" ;
+    rfq:toolRunOf ex:TOOL-match_library_part ; rfq:forTask ex:TASK-1002-match ; rfq:runInProgram ex:PRG-1002 ;
+    rfq:attemptNumber 2 ; rfq:runStatus "succeeded" ; rfq:retryOf ex:RUN-1002-3 ;
+    prov:startedAtTime "2026-10-28T09:00:42"^^xsd:dateTime ; prov:endedAtTime "2026-10-28T09:00:46"^^xsd:dateTime ;
+    rfq:toolRunInput ex:RFQ-1002-L1 ; rfq:toolRunOutput ex:SM-1002-L1 ;
+    rfq:outputSummary "{\"matches\": [{\"line\": \"RFQ-1002-L1\", \"product\": \"BRK-100\", \"score\": 0.91}]}" .
+ex:RUN-1002-5 a rfq:ToolRun ; rdfs:label "cost_quote run 1" ;
+    rfq:toolRunOf ex:TOOL-cost_quote ; rfq:forTask ex:TASK-1002-cost ; rfq:runInProgram ex:PRG-1002 ;
+    rfq:attemptNumber 1 ; rfq:runStatus "succeeded" ;
+    prov:startedAtTime "2026-10-28T09:00:47"^^xsd:dateTime ; prov:endedAtTime "2026-10-28T09:00:48"^^xsd:dateTime ;
+    rfq:toolRunInput ex:RFQ-1002 ; rfq:toolRunOutput ex:Q-1002-A .
+
+# The match the retry produced: RFQ line -> known product, as a SimilarityMatch (invented example values).
+ex:SM-1002-L1 a rfq:SimilarityMatch ; rdfs:label "Match RFQ-1002-L1 to BRK-100" ;
+    rfq:forRFQLine ex:RFQ-1002-L1 ; rfq:matchedProduct ex:BRK-100 ;
+    rfq:similarityScore 0.91 ; rfq:similarityMethod "llm:llama-3.3-70b (example)" ; rfq:confidence "high" ; rfq:manualOverride false .
+
+# Issues.
+ex:ISS-1002-1 a rfq:Issue ; rdfs:label "RFQ-1002: missing Incoterm" ;
+    rfq:issueSeverity "blocker" ; rfq:issueStatus "open" ; rfq:raisedBy ex:RUN-1002-2 ; rfq:assignedTo "human:estimator" .
+ex:ISS-1002-2 a rfq:Issue ; rdfs:label "RFQ-1002: missing material or finish spec" ;
+    rfq:issueSeverity "blocker" ; rfq:issueStatus "open" ; rfq:raisedBy ex:RUN-1002-2 ; rfq:assignedTo "human:estimator" .
+ex:ISS-1002-3 a rfq:Issue ; rdfs:label "match_library_part timed out (retried)" ;
+    rfq:issueSeverity "warning" ; rfq:issueStatus "resolved" ; rfq:raisedBy ex:RUN-1002-3 ; rfq:assignedTo "PLA" .
+
+# Draft quote waiting at the human gate.
+ex:Q-1002-A a rfq:Quote ; rdfs:label "Quote Q-1002 rev A" ; rfq:identifier "Q-1002" ; rfq:revision "A" ;
+    rfq:respondsTo ex:RFQ-1002 ; rfq:quoteStatus "awaiting approval" .
+ex:GATE-1002 a rfq:ApprovalGate ; rdfs:label "Approval gate for Q-1002 rev A" ;
+    rfq:gateForQuote ex:Q-1002-A ; rfq:gateDecision "pending" .

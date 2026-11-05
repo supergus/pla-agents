@@ -1,7 +1,7 @@
 """The Program Lifecycle Agent (PLA): a small, durable orchestrator loop.
 
 Each program's state lives in two places, saved together after every step (store.RunStore):
-- an RDF graph that conforms to the rfq-ontology PLA module (Program, Task, Issue, ToolRun,
+- an RDF graph that conforms to the ontology's PLA module (ontology/ontology/rfq-pla.ttl) (Program, Task, Issue, ToolRun,
   ApprovalGate) plus the RFQ facts the tools wrote, and
 - a JSON state document (status, idempotency ledger, in-flight step, retry bookkeeping).
 

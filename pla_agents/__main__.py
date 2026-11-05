@@ -1,12 +1,12 @@
 """CLI for the PLA.
 
-  python -m rfq_agents run --rfq data/rfq-1002-incomplete.ttl [--inject-failure TOOL[:N|:fatal|:crash]]
-  python -m rfq_agents run --resume RUN_ID [--fix FILE.ttl] [--resolve ISS-ID] [--retry] [--approve|--reject --by NAME]
-  python -m rfq_agents status RUN_ID [--json]
-  python -m rfq_agents list
+  python -m pla_agents run --rfq data/rfq-1002-incomplete.ttl [--inject-failure TOOL[:N|:fatal|:crash]]
+  python -m pla_agents run --resume RUN_ID [--fix FILE.ttl] [--resolve ISS-ID] [--retry] [--approve|--reject --by NAME]
+  python -m pla_agents status RUN_ID [--json]
+  python -m pla_agents list
 
-Paths given to --rfq/--fix are resolved against the cwd, then the pinned rfq-ontology checkout,
-then this repo. The run store is $RFQ_AGENTS_DB (default runs/pla.sqlite).
+Paths given to --rfq/--fix are resolved against the cwd, then the in-repo ontology/ tree,
+then this repo. The run store is $PLA_AGENTS_DB (default runs/pla.sqlite).
 """
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ def summary(state: dict) -> str:
     for b in state.get("breaks", []):
         out.append(f"  qty {b['quantity']:>6,}: unit ${b['unit_price']}  total ${float(b['total']):,.2f}")
     if state["status"] == "waiting_approval":
-        out.append(f"next: approve with  python -m rfq_agents run --resume {state['run_id']} --approve --by NAME")
+        out.append(f"next: approve with  python -m pla_agents run --resume {state['run_id']} --approve --by NAME")
     elif state["status"] == "waiting_human":
         out.append(f"next: fix the data with  --resume {state['run_id']} --fix FILE.ttl  (or --resolve ISS-ID)")
     elif state["status"] == "failed":
@@ -45,7 +45,7 @@ def summary(state: dict) -> str:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="rfq_agents", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(prog="pla_agents", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run")
     r.add_argument("--rfq"); r.add_argument("--resume", metavar="RUN_ID"); r.add_argument("--run-id")
@@ -54,16 +54,16 @@ def main(argv=None) -> int:
     r.add_argument("--retry", action="store_true", help="retry a failed step after exhaustion")
     g = r.add_mutually_exclusive_group(); g.add_argument("--approve", action="store_true"); g.add_argument("--reject", action="store_true")
     r.add_argument("--by", default=os.environ.get("USER", "human"))
-    r.add_argument("--llm", default=os.environ.get("RFQ_AGENTS_LLM", "canned"), help="canned | workers-ai")
+    r.add_argument("--llm", default=os.environ.get("PLA_AGENTS_LLM", "canned"), help="canned | workers-ai")
     r.add_argument("--quote-date", help="YYYY-MM-DD; rates effective on this date (default today)")
     r.add_argument("--max-attempts", type=int, default=3); r.add_argument("--base-delay", type=float, default=0.2)
     r.add_argument("--json", action="store_true")
     s = sub.add_parser("status"); s.add_argument("run_id"); s.add_argument("--json", action="store_true")
     sub.add_parser("list")
     for p in (r, s):
-        p.add_argument("--db", default=os.environ.get("RFQ_AGENTS_DB", "runs/pla.sqlite"))
+        p.add_argument("--db", default=os.environ.get("PLA_AGENTS_DB", "runs/pla.sqlite"))
     a = ap.parse_args(argv)
-    db = getattr(a, "db", os.environ.get("RFQ_AGENTS_DB", "runs/pla.sqlite"))
+    db = getattr(a, "db", os.environ.get("PLA_AGENTS_DB", "runs/pla.sqlite"))
     store = RunStore(db)
 
     if a.cmd == "list":

@@ -1,0 +1,10 @@
+# CQ9: Which issues are still open in each program, how severe, who owns them, and which tool raised them?
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?program ?issue ?severity ?owner ?tool WHERE {
+  ?program rfq:hasIssue ?issue .
+  ?issue rfq:issueStatus "open" ; rfq:issueSeverity ?severity ; rfq:assignedTo ?owner ; rfq:raisedBy ?run .
+  OPTIONAL { ?run rfq:toolRunOf/rdfs:label ?tool }
+}
+ORDER BY ?program ?issue

@@ -110,5 +110,5 @@ def client_from_name(name: str) -> LLMClient:
     if name == "canned":
         return CannedLLMClient()
     if name == "workers-ai":
-        return WorkersAIClient(model=os.environ.get("RFQ_AGENTS_MODEL", DEFAULT_MODEL))
+        return WorkersAIClient(model=os.environ.get("PLA_AGENTS_MODEL", DEFAULT_MODEL))
     raise ValueError(f"unknown LLM client {name!r} (canned | workers-ai)")

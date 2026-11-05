@@ -1,0 +1,12 @@
+# CQ6: Which quotes used an out-of-date (superseded) rate?
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX ex:   <https://supergus.github.io/rfq-ontology/data#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT DISTINCT ?quote ?revision ?staleRate ?newerRate WHERE {
+  ?quote rfq:revision ?revision ; rfq:hasPriceBreak/rfq:hasCostEstimate ?est .
+  ?est prov:wasDerivedFrom ?staleRate .
+  ?staleRate rfq:isSupersededBy ?newerRate .
+}
+ORDER BY ?quote

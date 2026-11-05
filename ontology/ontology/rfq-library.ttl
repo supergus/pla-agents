@@ -1,0 +1,105 @@
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+<https://supergus.github.io/rfq-ontology/library> a owl:Ontology ;
+    rdfs:label "RFQ ontology: component library and routings" ;
+    rdfs:comment "Our library of previously costed components, routings and work centers, and recorded similarity matches between new BOM lines or RFQ lines and library entries or known products." ;
+    owl:imports <https://supergus.github.io/rfq-ontology/bom> , <https://supergus.github.io/rfq-ontology/provenance> .
+
+rfq:ComponentLibraryEntry a owl:Class ;
+    rdfs:label "component library entry" ; rdfs:comment "A previously costed component. For bought parts its unit cost is the purchase price; for made parts it is the raw-material cost and it carries a routing." .
+
+rfq:SimilarityMatch a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:label "similarity match" ; rdfs:comment "A recorded fact that something being quoted was matched to something we already know, with score, method, confidence and an optional manual override. Two levels: a BOM line matched to a library entry (forBOMLine + matchedEntry), or an RFQ line matched to a known product (forRFQLine + matchedProduct, written by the PLA's match_library_part tool). Each match is for exactly one BOM line or one RFQ line (SHACL). The ontology records matches; an outside tool, an LLM or a person computes them." .
+
+rfq:Routing a owl:Class ;
+    rdfs:label "routing" ; rdfs:comment "The ordered list of process steps used to make a component." .
+
+rfq:ProcessStep a owl:Class ;
+    rdfs:label "process step" ; rdfs:comment "One operation in a routing, with setup hours (once per lot) and run hours (per unit) at a work center." .
+
+rfq:WorkCenter a owl:Class ;
+    rdfs:label "work center" ; rdfs:comment "A machine or cell where process steps run (laser, press brake, weld cell)." .
+
+rfq:forBOMLine a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "for BOM line" ; rdfs:comment "The BOM line a similarity match was made for." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range rfq:BOMLine ;
+    owl:inverseOf rfq:hasSimilarityMatch .
+
+rfq:hasSimilarityMatch a owl:ObjectProperty ;
+    rdfs:label "has similarity match" ; rdfs:comment "Inverse of for BOM line." .
+
+rfq:forRFQLine a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "for RFQ line" ; rdfs:comment "The RFQ line a similarity match was made for (product-level match, e.g. from the PLA's match_library_part tool)." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range rfq:RFQLine ;
+    owl:inverseOf rfq:hasLineMatch .
+
+rfq:hasLineMatch a owl:ObjectProperty ;
+    rdfs:label "has line match" ; rdfs:comment "Inverse of for RFQ line: the similarity matches recorded for an RFQ line." .
+
+rfq:matchedProduct a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "matched product" ; rdfs:comment "The known product (one with a BOM we can reuse) judged most similar to an RFQ line." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range rfq:Product .
+
+rfq:matchedEntry a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "matched entry" ; rdfs:comment "The library entry judged most similar." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range rfq:ComponentLibraryEntry .
+
+rfq:hasRouting a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "has routing" ; rdfs:comment "Routing of a made library component." ;
+    rdfs:domain rfq:ComponentLibraryEntry ; rdfs:range rfq:Routing .
+
+rfq:hasStep a owl:ObjectProperty ;
+    rdfs:label "has step" ; rdfs:comment "A process step of a routing; order is given by step sequence." ;
+    rdfs:domain rfq:Routing ; rdfs:range rfq:ProcessStep .
+
+rfq:atWorkCenter a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "at work center" ; rdfs:comment "Work center that performs a step." ;
+    rdfs:domain rfq:ProcessStep ; rdfs:range rfq:WorkCenter .
+
+rfq:libraryUnitCost a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "library unit cost" ; rdfs:comment "Historic cost per unit (USD): purchase price for bought parts, raw material for made parts." ;
+    rdfs:domain rfq:ComponentLibraryEntry ; rdfs:range xsd:decimal .
+
+rfq:costDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "cost date" ; rdfs:comment "Date the library cost was established; old costs deserve less confidence." ;
+    rdfs:domain rfq:ComponentLibraryEntry ; rdfs:range xsd:dateTime .
+
+rfq:costBasisQuantity a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "cost basis quantity" ; rdfs:comment "Order quantity the library cost was based on." ;
+    rdfs:domain rfq:ComponentLibraryEntry ; rdfs:range xsd:integer .
+
+rfq:similarityScore a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "similarity score" ; rdfs:comment "Score from 0 to 1 produced by the matching method." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range xsd:decimal .
+
+rfq:similarityMethod a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "similarity method" ; rdfs:comment "How the score was produced (e.g. 'attribute-weighted v1', 'manual')." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range xsd:string .
+
+rfq:confidence a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "confidence" ; rdfs:comment "Estimator's confidence flag: 'high', 'medium' or 'low'." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range xsd:string .
+
+rfq:manualOverride a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "manual override" ; rdfs:comment "True when an estimator replaced the library cost with override unit cost." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range xsd:boolean .
+
+rfq:overrideUnitCost a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "override unit cost" ; rdfs:comment "Unit cost (USD) entered by an estimator; used instead of the library cost when manual override is true." ;
+    rdfs:domain rfq:SimilarityMatch ; rdfs:range xsd:decimal .
+
+rfq:stepSequence a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "step sequence" ; rdfs:comment "Operation number within the routing (10, 20, 30)." ;
+    rdfs:domain rfq:ProcessStep ; rdfs:range xsd:integer .
+
+rfq:setupHours a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "setup hours" ; rdfs:comment "Hours to set up the step, incurred once per lot." ;
+    rdfs:domain rfq:ProcessStep ; rdfs:range xsd:decimal .
+
+rfq:runHours a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "run hours" ; rdfs:comment "Hours per unit of the component to run the step." ;
+    rdfs:domain rfq:ProcessStep ; rdfs:range xsd:decimal .
