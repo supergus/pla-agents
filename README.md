@@ -88,3 +88,9 @@ Agentic tools call an `LLMClient`. Default is `canned` (offline, deterministic: 
 against a JSON schema and SHACL before it is written, and low-confidence fields become Issues.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the PR process and [docs/architecture.md](docs/architecture.md) for the design.
+
+## Related repositories
+- [supergus/rfq-ontology](https://github.com/supergus/rfq-ontology) — tutorial OWL ontology for the RFQ-to-quote process; pinned here via `ontology.lock`.
+- [supergus/rfq-demo](https://github.com/supergus/rfq-demo) — live PLA management console / quote demo at https://pla.chriscouch.net.
+- This repo (`rfq-agents`) — PLA orchestrator and tools.
+- Leaf Tender is a separate ontology management project hosted at https://leaftender.chriscouch.net (not part of this RFQ demo trio).
