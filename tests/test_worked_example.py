@@ -20,7 +20,7 @@ def test_rfq_1001_worked_example_numbers(make_pla):
 
 
 def test_worked_example_written_to_graph(make_pla):
-    from rfq_agents.ontology import RFQ
+    from pla_agents.ontology import RFQ
     pla = make_pla()
     rid = pla.start("data/rfq-1001.ttl", run_id="1001-g", quote_date=QUOTE_DATE)
     pla.run(rid)

@@ -13,7 +13,7 @@
    `Grok Bot QC` = `success` on the PR head commit:
 
    ```bash
-   gh api repos/supergus/rfq-ontology/statuses/<head-sha> \
+   gh api repos/supergus/pla-agents/statuses/<head-sha> \
      -f state=success -f context="Grok Bot QC" -f description="Diff reviewed; tests passed"
    ```
 

@@ -1,8 +1,8 @@
-"""Every term the PLA writes into a program graph is declared in the pinned rfq-ontology."""
+"""Every term the PLA writes into a program graph is declared in the in-repo ontology (ontology/)."""
 from rdflib import OWL, RDF, URIRef
 
 from conftest import QUOTE_DATE
-from rfq_agents.ontology import PLA, RFQ, load_files, ontology_files
+from pla_agents.ontology import PLA, RFQ, load_files, ontology_files
 
 
 def test_program_graph_uses_only_declared_terms(make_pla):

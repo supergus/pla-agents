@@ -6,7 +6,7 @@
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 
 # Tool contracts as data. The rfq: triples MUST match the Tool individuals in the pinned
-# rfq-ontology data/pla-run-1002.ttl (tests/test_contracts.py checks this). The pla: triples are
+# ontology/data/pla-run-1002.ttl (tests/test_contracts.py checks this). The pla: triples are
 # planner metadata local to this repo: which task/stage a tool serves, its order in the
 # default pipeline, and the named artifacts it requires and produces.
 

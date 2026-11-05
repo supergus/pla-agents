@@ -9,15 +9,10 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-# Make sure the pinned ontology is present (CI also fetches it explicitly).
-if not (ROOT / "vendor" / "rfq-ontology" / "ontology").exists():
-    import os
-    if not os.environ.get("RFQ_ONTOLOGY_DIR"):
-        subprocess.run([sys.executable, str(ROOT / "scripts" / "fetch_ontology.py")], check=True)
 
-from rfq_agents.pla import PLA  # noqa: E402
-from rfq_agents.retry import FailureInjector, RetryPolicy  # noqa: E402
-from rfq_agents.store import RunStore  # noqa: E402
+from pla_agents.pla import PLA  # noqa: E402
+from pla_agents.retry import FailureInjector, RetryPolicy  # noqa: E402
+from pla_agents.store import RunStore  # noqa: E402
 
 QUOTE_DATE = "2026-10-27"
 

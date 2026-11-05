@@ -45,4 +45,4 @@ Both carry `similarityScore`, `similarityMethod`, `confidence` and optional `man
 - **Reasoner**: tools are classified as agentic or deterministic, and tool runs are `prov:Activity`.
 - **Tests**: `tests/test_pla.py`, plus new cases in `test_queries.py` and `test_reasoner.py`.
 
-The PLA loop itself (Python orchestrator, retries, Worker) lives in the separate `rfq-agents` repo; this repo only holds the shared vocabulary.
+The PLA loop itself (Python orchestrator, retries, Worker) lives in the root of `supergus/pla-agents`; this `ontology/` tree only holds the shared vocabulary.

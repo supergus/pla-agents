@@ -1,6 +1,6 @@
 # Sample prompts: what the system sends to the LLM
 
-The prompts live in `supergus/rfq-demo` (`worker/src/prompts/`); this is a rendered snapshot as of 2026-11-04.
+The prompts live in `supergus/pla-demo` (`worker/src/prompts/`); this is a rendered snapshot as of 2026-11-04.
 
 The Worker (`worker/src/ai.js`) sends each step as two chat messages (system and user) with a JSON schema that forces the reply format. These are the exact prompts and schemas from `worker/src/prompts/` on `main`, rendered with sample inputs.
 

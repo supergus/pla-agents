@@ -1,4 +1,7 @@
-# rfq-ontology
+# ontology (formerly supergus/rfq-ontology)
+
+> This tree was folded into `supergus/pla-agents` from the now-archived `supergus/rfq-ontology` repo.
+> CI runs from the repo root workflow (`.github/workflows/ci.yml`, workflow **tests**).
 
 A tutorial-grade, OWL 2 DL toy ontology for a manufacturing **RFQ-to-quote** process,
 managed in GitHub with a PR process and CI. It is a teaching project on data ontology
@@ -66,7 +69,7 @@ ROBOT_JAR=robot.jar scripts/reason.sh
 REQUIRE_REASONER=1 python -m pytest -q   # now also runs the reasoner assertions
 ```
 
-CI (`.github/workflows/ci.yml`, workflow **tests**) runs all of the above on every PR and on
+CI (the repo-root `.github/workflows/ci.yml`, workflow **tests**) runs all of the above on every PR and on
 pushes to `main`; the `build/` folder (reasoned graph, ROBOT report, profile reports, quote
 results) is uploaded as a workflow artifact.
 
@@ -88,10 +91,10 @@ completeness; 3 BOM + make/buy; 4 library, routings, rate tables; 5 cost chain +
 
 
 ## Related repositories
-- This repo (`rfq-ontology`) — tutorial OWL ontology for the RFQ-to-quote process.
-- [supergus/rfq-agents](https://github.com/supergus/rfq-agents) — PLA orchestrator and tools; pins this ontology via `ontology.lock`.
-- [supergus/rfq-demo](https://github.com/supergus/rfq-demo) — live PLA management console / quote demo at https://pla.chriscouch.net.
-- Leaf Tender is a separate ontology management project hosted at https://leaftender.chriscouch.net (not part of this RFQ demo trio).
+- This tree (`ontology/` in [supergus/pla-agents](https://github.com/supergus/pla-agents)) — tutorial OWL ontology for the RFQ-to-quote process.
+- [supergus/pla-agents](https://github.com/supergus/pla-agents) — PLA orchestrator and tools (repo root).
+- [supergus/pla-demo](https://github.com/supergus/pla-demo) — live PLA management console / quote demo at https://pla.chriscouch.net.
+- Leaf Tender is a separate ontology management project hosted at https://leaftender.chriscouch.net (not part of the PLA demo).
 
 ## Process
 

@@ -1,4 +1,4 @@
-from rfq_agents.__main__ import main
+from pla_agents.__main__ import main
 
 
 def test_cli_end_to_end(db, capsys):

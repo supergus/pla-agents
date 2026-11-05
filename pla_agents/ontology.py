@@ -1,4 +1,4 @@
-"""Locate and load the pinned rfq-ontology dependency (see ontology.lock)."""
+"""Locate and load the in-repo ontology (ontology/, formerly the supergus/rfq-ontology repo)."""
 from __future__ import annotations
 
 import importlib.util
@@ -20,10 +20,10 @@ class OntologyMissing(RuntimeError):
 
 
 def ontology_dir() -> Path:
-    env = os.environ.get("RFQ_ONTOLOGY_DIR")
-    d = Path(env) if env else REPO_ROOT / "vendor" / "rfq-ontology"
+    env = os.environ.get("PLA_ONTOLOGY_DIR")
+    d = Path(env) if env else REPO_ROOT / "ontology"
     if not (d / "ontology" / "rfq-pla.ttl").exists():
-        raise OntologyMissing(f"rfq-ontology not found at {d}; run `python scripts/fetch_ontology.py`")
+        raise OntologyMissing(f"ontology not found at {d}; expected the in-repo ontology/ tree or $PLA_ONTOLOGY_DIR")
     return d
 
 
@@ -55,7 +55,7 @@ def context_graph() -> Graph:
     + this repo's tool contracts. Read-only context; program facts live in the run's own graph."""
     d = ontology_dir()
     return load_files(*ontology_files(), d / "data" / "reference.ttl", d / "data" / "rfq-1001.ttl",
-                      REPO_ROOT / "rfq_agents" / "contracts" / "tools.ttl")
+                      REPO_ROOT / "pla_agents" / "contracts" / "tools.ttl")
 
 
 def shapes_path(name: str) -> Path:

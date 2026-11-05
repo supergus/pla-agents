@@ -1,6 +1,9 @@
 # RFQ Ontology Tutorial: Project Write-up
 
-*HAPP Research · Chris Couch · repos: `supergus/rfq-ontology`, `supergus/rfq-agents`, `supergus/rfq-demo` · live demo: pla.chriscouch.net · Nov 4, 2026*
+*HAPP Research · Chris Couch · repos: `supergus/pla-agents` (ontology in `ontology/`), `supergus/pla-demo` · live demo: pla.chriscouch.net · Nov 4, 2026*
+
+> **Update (Nov 5, 2026):** `supergus/rfq-ontology` was folded into `supergus/pla-agents` (formerly `rfq-agents`) under `ontology/` and archived; `rfq-demo` was renamed `pla-demo`; the Python package is now `pla_agents`. Later sections record the initial build under the original names. OWL IRIs and Cloudflare resource names (`rfq-demo` Pages project, `rfq-pla` Worker) are unchanged.
+
 
 ## 1. Goal: demonstrate a managed ontology
 

@@ -2,7 +2,7 @@
 import pytest
 
 from conftest import QUOTE_DATE, open_issues, runs_of
-from rfq_agents.retry import FailureInjector, InjectedCrash
+from pla_agents.retry import FailureInjector, InjectedCrash
 
 
 def test_crash_after_step_resumes_without_redoing_it(make_pla):
