@@ -1,0 +1,13 @@
+# CQ4: What is the unit COGS and quoted price at each quantity break? (run on data + build/quote-results.ttl)
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX ex:   <https://supergus.github.io/rfq-ontology/data#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT ?quote ?qty ?cogs ?unitPrice ?total WHERE {
+  ?quote rfq:hasPriceBreak ?pb .
+  ?pb rfq:forQuantityBreak/rfq:quantity ?qty ; rfq:unitPrice ?unitPrice ; rfq:totalPrice ?total ;
+      rfq:hasCostEstimate ?c .
+  ?c a rfq:COGS ; rfq:amountUSD ?cogs .
+}
+ORDER BY ?quote ?qty

@@ -1,0 +1,53 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      ROBOT_VERSION: v1.9.11
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+      - name: Cache ROBOT
+        id: robot-cache
+        uses: actions/cache@v4
+        with:
+          path: robot.jar
+          key: robot-${{ env.ROBOT_VERSION }}
+      - name: Download ROBOT
+        if: steps.robot-cache.outputs.cache-hit != 'true'
+        run: curl -fsSL -o robot.jar "https://github.com/ontodev/robot/releases/download/${ROBOT_VERSION}/robot.jar"
+      - name: Turtle parses
+        run: python -m pytest -q tests/test_ontology.py
+      - name: OWL 2 DL profile, HermiT reasoning (no unsatisfiable classes, consistent), ROBOT report
+        run: ROBOT_JAR=robot.jar scripts/reason.sh
+      - name: SHACL, SPARQL competency queries, worked-example numbers, reasoner inferences
+        env:
+          REQUIRE_REASONER: "1"
+        run: python -m pytest -v
+      - name: Print quote breakdown
+        run: python scripts/quote.py
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build/

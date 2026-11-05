@@ -1,0 +1,24 @@
+# CQ1: Does this RFQ have everything we need to quote? Lists every missing critical element (closed-world, like SHACL).
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX ex:   <https://supergus.github.io/rfq-ontology/data#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT ?rfq ?missing WHERE {
+  ?rfq a rfq:RFQPackage .
+  {
+    FILTER NOT EXISTS { ?rfq rfq:hasCommercialTerms ?ct }               BIND("commercial terms" AS ?missing)
+  } UNION {
+    FILTER NOT EXISTS { ?rfq rfq:hasDeliveryTerms/rfq:hasIncoterm ?i }  BIND("Incoterm" AS ?missing)
+  } UNION {
+    FILTER NOT EXISTS { ?rfq rfq:hasDeliveryTerms/rfq:requestedDeliveryDate ?d } BIND("requested delivery date" AS ?missing)
+  } UNION {
+    FILTER NOT EXISTS { ?rfq rfq:hasLine/rfq:hasQuantityBreak/rfq:quantity ?q } BIND("quantity" AS ?missing)
+  } UNION {
+    FILTER NOT EXISTS { ?rfq rfq:hasTechnicalRequirement/a rfq:Drawing }  BIND("drawing" AS ?missing)
+  } UNION {
+    FILTER NOT EXISTS { ?rfq rfq:hasTechnicalRequirement ?s . { ?s a rfq:MaterialSpec } UNION { ?s a rfq:FinishSpec } }
+    BIND("material or finish spec" AS ?missing)
+  }
+}
+ORDER BY ?rfq ?missing

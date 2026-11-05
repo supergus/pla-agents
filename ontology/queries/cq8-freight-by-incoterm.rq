@@ -1,0 +1,10 @@
+# CQ8: Does the quote need a freight line? (Incoterm says whether the seller pays main carriage.)
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX ex:   <https://supergus.github.io/rfq-ontology/data#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT ?rfq ?incoterm ?sellerPaysFreight ?riskTransfer WHERE {
+  ?rfq rfq:hasDeliveryTerms/rfq:hasIncoterm ?incoterm .
+  ?incoterm rfq:sellerPaysFreight ?sellerPaysFreight ; rfq:riskTransferPoint ?riskTransfer .
+}

@@ -1,0 +1,12 @@
+# CQ10: How many tool runs were deterministic vs agentic (AI), and how many attempts failed and were retried?
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?kind (COUNT(?run) AS ?runs) (SUM(IF(?status = "failed", 1, 0)) AS ?failed) (SUM(IF(BOUND(?prev), 1, 0)) AS ?retries) WHERE {
+  ?run rfq:toolRunOf ?tool ; rfq:runStatus ?status .
+  ?tool rfq:isAgentic ?ai .
+  OPTIONAL { ?run rfq:retryOf ?prev }
+  BIND(IF(?ai, "agentic", "deterministic") AS ?kind)
+}
+GROUP BY ?kind
+ORDER BY ?kind

@@ -1,0 +1,16 @@
+# CQ5: Which routing steps drive conversion cost? Run cost per assembly per step at current (not superseded) work-center rates.
+PREFIX rfq:  <https://supergus.github.io/rfq-ontology/ns#>
+PREFIX ex:   <https://supergus.github.io/rfq-ontology/data#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+SELECT ?line ?step ?workCenter ?runCostPerAssembly ?setupCostPerLot WHERE {
+  ?line rfq:sourcingDecision rfq:Make ; rfq:quantityPer ?qtyPer .
+  ?m rfq:forBOMLine ?line ; rfq:matchedEntry/rfq:hasRouting/rfq:hasStep ?step .
+  ?step rfq:atWorkCenter ?workCenter ; rfq:runHours ?run ; rfq:setupHours ?setup .
+  ?rate rfq:forWorkCenter ?workCenter ; rfq:laborRatePerHour ?l ; rfq:machineRatePerHour ?mc ; rfq:burdenRatePerHour ?b .
+  FILTER NOT EXISTS { ?rate rfq:isSupersededBy ?newer }
+  BIND(?run * ?qtyPer * (?l + ?mc + ?b) AS ?runCostPerAssembly)
+  BIND(?setup * (?l + ?mc + ?b) AS ?setupCostPerLot)
+}
+ORDER BY DESC(?runCostPerAssembly)

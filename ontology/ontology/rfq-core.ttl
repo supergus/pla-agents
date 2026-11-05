@@ -1,0 +1,55 @@
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<https://supergus.github.io/rfq-ontology/core> a owl:Ontology ;
+    rdfs:label "RFQ ontology: core" ;
+    rdfs:comment "Shared terms (customer, units of measure, revisions) used by every RFQ module." ;
+    owl:versionIRI <https://supergus.github.io/rfq-ontology/0.1.0/core> .
+
+dcterms:title a owl:AnnotationProperty ; rdfs:label "title" .
+dcterms:description a owl:AnnotationProperty ; rdfs:label "description" .
+dcterms:license a owl:AnnotationProperty ; rdfs:label "license" .
+
+
+# ---------- Classes ----------
+rfq:Customer a owl:Class ;
+    rdfs:label "customer" ;
+    rdfs:comment "A party that issues RFQs to us and receives our quotes." .
+
+rfq:UnitOfMeasure a owl:Class ;
+    rdfs:label "unit of measure" ;
+    rdfs:comment "A unit in which a quantity or a price is expressed (each, hour, kilogram, per 100). Prevents the classic 'per piece vs per 100' bug." .
+
+# ---------- Properties ----------
+rfq:revision a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "revision" ;
+    rdfs:comment "Revision identifier of a document (RFQ package or quote), for example 'A' or 'B'." ;
+    rdfs:range xsd:string .
+
+rfq:supersedes a owl:ObjectProperty ;
+    rdfs:label "supersedes" ;
+    rdfs:comment "This revision replaces the object revision (documents and rate-table rows). Transitive: rev C supersedes rev B which supersedes rev A, so C supersedes A. No domain/range on purpose, so rate rows are not inferred to be documents." ;
+    a owl:TransitiveProperty ;
+    owl:inverseOf rfq:isSupersededBy .
+
+rfq:isSupersededBy a owl:ObjectProperty ;
+    rdfs:label "is superseded by" ;
+    rdfs:comment "Inverse of supersedes. Also used on rate-table rows, which become stale when a newer row supersedes them." .
+
+rfq:unitOfMeasure a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "unit of measure (property)" ;
+    rdfs:comment "The unit of measure in which a quantity or price on the subject is expressed." ;
+    rdfs:range rfq:UnitOfMeasure .
+
+rfq:identifier a owl:DatatypeProperty ;
+    rdfs:label "identifier" ;
+    rdfs:comment "Business identifier (part number, RFQ number, quote number, work-center code)." ;
+    rdfs:range xsd:string .
+
+# ---------- Units of measure ----------
+rfq:UOM_Each a rfq:UnitOfMeasure ; rdfs:label "each" ; rdfs:comment "One piece." .
+rfq:UOM_Hour a rfq:UnitOfMeasure ; rdfs:label "hour" ; rdfs:comment "One clock hour." .
+rfq:UOM_USD a rfq:UnitOfMeasure ; rdfs:label "US dollar" ; rdfs:comment "Currency unit. The toy uses one currency only." .

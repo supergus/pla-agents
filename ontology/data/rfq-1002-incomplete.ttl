@@ -1,0 +1,29 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix ex:   <https://supergus.github.io/rfq-ontology/data#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+
+<https://supergus.github.io/rfq-ontology/data/rfq-1002> a owl:Ontology ;
+    rdfs:label "data/rfq-1002 (example data)" ;
+    owl:imports <https://supergus.github.io/rfq-ontology/rfq> , <https://supergus.github.io/rfq-ontology/data/reference> .
+
+# RFQ-1002: an INCOMPLETE RFQ. It has no Incoterm and no material or finish spec,
+# so the SHACL completeness shapes must report exactly those two problems.
+
+ex:RFQ-1002 a rfq:RFQPackage ; rdfs:label "RFQ-1002 rev A" ;
+    rfq:identifier "RFQ-1002" ; rfq:revision "A" ; rfq:receivedDate "2026-10-28T00:00:00"^^xsd:dateTime ;
+    rfq:issuedBy ex:NORTHWIND ;
+    rfq:hasCommercialTerms ex:RFQ-1002-CT ;
+    rfq:hasDeliveryTerms ex:RFQ-1002-DT ;
+    rfq:hasTechnicalRequirement ex:DWG-BRK-200 ;
+    rfq:hasLine ex:RFQ-1002-L1 .
+ex:RFQ-1002-CT a rfq:CommercialTerms ; rdfs:label "RFQ-1002 commercial terms" ; rfq:paymentTerms "Net 30" .
+ex:RFQ-1002-DT a rfq:DeliveryTerms ; rdfs:label "RFQ-1002 delivery terms" ;
+    rfq:requestedDeliveryDate "2027-03-01T00:00:00"^^xsd:dateTime .
+ex:DWG-BRK-200 a rfq:Drawing ; rdfs:label "Drawing BRK-200 rev A" .
+ex:RFQ-1002-L1 a rfq:RFQLine ; rdfs:label "RFQ-1002 line 1: BRK-200 bracket" ;
+    rfq:hasQuantityBreak ex:QB2-500 .
+ex:QB2-500 a rfq:QuantityBreak ; rdfs:label "Qty 500 (RFQ-1002)" ; rfq:quantity 500 .

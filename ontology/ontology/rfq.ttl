@@ -1,0 +1,19 @@
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<https://supergus.github.io/rfq-ontology/rfq> a owl:Ontology ;
+    rdfs:label "RFQ-to-quote ontology" ;
+    dcterms:title "RFQ-to-quote toy ontology" ;
+    dcterms:description "Tutorial ontology for a manufacturing request-for-quotation process. Root file: imports every module." ;
+    rdfs:comment "Namespace https://supergus.github.io/rfq-ontology/ns# (planned GitHub Pages location)." ;
+    owl:versionIRI <https://supergus.github.io/rfq-ontology/0.1.0/rfq> ;
+    owl:versionInfo "0.1.0" ;
+    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+    owl:imports <https://supergus.github.io/rfq-ontology/core> ,
+                <https://supergus.github.io/rfq-ontology/provenance> ,
+                <https://supergus.github.io/rfq-ontology/package> ,
+                <https://supergus.github.io/rfq-ontology/bom> ,
+                <https://supergus.github.io/rfq-ontology/library> ,
+                <https://supergus.github.io/rfq-ontology/costing> ,
+                <https://supergus.github.io/rfq-ontology/pla> .

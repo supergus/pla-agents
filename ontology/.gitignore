@@ -1,0 +1,7 @@
+build/
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/
+robot.jar
+catalog-v001.xml.bak

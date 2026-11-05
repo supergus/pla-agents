@@ -1,0 +1,168 @@
+@prefix rfq:  <https://supergus.github.io/rfq-ontology/ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+<https://supergus.github.io/rfq-ontology/pla> a owl:Ontology ;
+    rdfs:label "RFQ ontology: PLA (Program Lifecycle Agent)" ;
+    rdfs:comment "Vocabulary the Program Lifecycle Agent uses to run a quote program: programs, issues, tasks, tools with contracts, tool runs (PROV activities, with attempts, retries, idempotency keys and errors), human fixes and the human approval gate. Part matches the PLA makes are recorded as rfq:SimilarityMatch (library module)." ;
+    owl:versionIRI <https://supergus.github.io/rfq-ontology/0.1.0/pla> ;
+    owl:imports <https://supergus.github.io/rfq-ontology/provenance> ,
+                <https://supergus.github.io/rfq-ontology/package> ,
+                <https://supergus.github.io/rfq-ontology/costing> .
+
+prov:startedAtTime a owl:DatatypeProperty ;
+    rdfs:label "started at time (PROV)" ; rdfs:comment "W3C PROV-O: when the activity started." ;
+    rdfs:domain prov:Activity ; rdfs:range xsd:dateTime .
+
+# ---------- Classes ----------
+rfq:Program a owl:Class ;
+    rdfs:label "program" ;
+    rdfs:comment "One quote program managed by the PLA end to end: the RFQ it answers, its stage, open issues, tasks, tool runs and approval gate." .
+
+rfq:Issue a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:label "issue" ;
+    rdfs:comment "A problem raised during a program (missing RFQ data, a failed tool attempt, a low-confidence AI field) with a severity, a status, who raised it and who owns it." .
+
+rfq:Task a owl:Class ;
+    rdfs:label "task" ;
+    rdfs:comment "A unit of work in a program (intake, validate, match, cost, approve, send) that the PLA performs by calling a tool." .
+
+rfq:Tool a owl:Class ;
+    rdfs:label "tool" ;
+    rdfs:comment "A callable capability with a declared input and output contract. The PLA picks tools by contract, whether they are code or an LLM." .
+
+rfq:DeterministicTool a owl:Class ;
+    rdfs:label "deterministic tool" ;
+    rdfs:comment "A tool implemented as plain code: same input, same output. Defined as a tool whose isAgentic flag is false, so the reasoner classifies it." ;
+    owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( rfq:Tool [ a owl:Restriction ; owl:onProperty rfq:isAgentic ; owl:hasValue false ] ) ] .
+
+rfq:AgenticTool a owl:Class ;
+    rdfs:label "agentic tool" ;
+    rdfs:comment "A tool backed by an LLM (Workers AI Llama 3.3 70B in the demo). Its outputs are proposals that are validated before use. Defined as a tool whose isAgentic flag is true." ;
+    owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( rfq:Tool [ a owl:Restriction ; owl:onProperty rfq:isAgentic ; owl:hasValue true ] ) ] .
+
+rfq:ToolRun a owl:Class ; rdfs:subClassOf prov:Activity ;
+    rdfs:label "tool run" ;
+    rdfs:comment "One attempt at calling a tool: which tool, what it read (prov:used), what it produced (prov:wasGeneratedBy), timestamps, attempt number and status. A retry is a new tool run that points to the failed one." .
+
+rfq:ApprovalGate a owl:Class ;
+    rdfs:label "approval gate" ;
+    rdfs:comment "A human checkpoint the PLA stops at before a quote is sent. Agents propose; people approve or reject." .
+
+rfq:HumanFix a owl:Class ; rdfs:subClassOf prov:Entity ;
+    rdfs:label "human fix" ;
+    rdfs:comment "A correction a person applied to a program's RFQ data (for example adding the missing Incoterm), recorded with who applied it and when (prov:generatedAtTime)." .
+
+rfq:Tool owl:disjointWith rfq:Program , rfq:Task , rfq:ApprovalGate , prov:Entity , prov:Activity .
+rfq:Program owl:disjointWith rfq:Task , rfq:ApprovalGate , prov:Entity , prov:Activity .
+
+# ---------- Object properties ----------
+rfq:programForRFQ a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "program for RFQ" ; rdfs:comment "The RFQ package this program answers." ;
+    rdfs:domain rfq:Program ; rdfs:range rfq:RFQPackage .
+rfq:hasIssue a owl:ObjectProperty ;
+    rdfs:label "has issue" ; rdfs:comment "An issue raised in this program." ;
+    rdfs:domain rfq:Program ; rdfs:range rfq:Issue .
+rfq:raisedBy a owl:ObjectProperty ;
+    rdfs:label "raised by" ; rdfs:comment "The tool run that raised the issue. No range on purpose, so later a person or agent can also raise one." ;
+    rdfs:domain rfq:Issue .
+rfq:hasTask a owl:ObjectProperty ;
+    rdfs:label "has task" ; rdfs:comment "A task in this program." ;
+    rdfs:domain rfq:Program ; rdfs:range rfq:Task .
+rfq:usesTool a owl:ObjectProperty ;
+    rdfs:label "uses tool" ; rdfs:comment "The tool the PLA calls to perform this task." ;
+    rdfs:domain rfq:Task ; rdfs:range rfq:Tool .
+rfq:toolRunOf a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "tool run of" ; rdfs:comment "The tool that this run called (prov:wasAssociatedWith in spirit)." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range rfq:Tool .
+rfq:forTask a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "for task" ; rdfs:comment "The task this tool run worked on." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range rfq:Task .
+rfq:runInProgram a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "run in program" ; rdfs:comment "The program this tool run belongs to." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range rfq:Program .
+rfq:toolRunInput a owl:ObjectProperty ; rdfs:subPropertyOf prov:used ;
+    rdfs:label "tool run input" ; rdfs:comment "An entity the tool run read. Specializes prov:used." ;
+    rdfs:domain rfq:ToolRun .
+rfq:toolRunOutput a owl:ObjectProperty ; owl:inverseOf prov:wasGeneratedBy ;
+    rdfs:label "tool run output" ; rdfs:comment "An entity the tool run produced. Inverse of prov:wasGeneratedBy (PROV-O's prov:generated)." .
+rfq:retryOf a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "retry of" ; rdfs:comment "The earlier failed attempt that this tool run retries." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range rfq:ToolRun .
+rfq:hasApprovalGate a owl:ObjectProperty ;
+    rdfs:label "has approval gate" ; rdfs:comment "A human approval gate in this program." ;
+    rdfs:domain rfq:Program ; rdfs:range rfq:ApprovalGate .
+rfq:gateForQuote a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "gate for quote" ; rdfs:comment "The quote this gate must approve before it can be sent." ;
+    rdfs:domain rfq:ApprovalGate ; rdfs:range rfq:Quote .
+
+rfq:hasFix a owl:ObjectProperty ;
+    rdfs:label "has fix" ; rdfs:comment "A human fix applied to this program's RFQ data." ;
+    rdfs:domain rfq:Program ; rdfs:range rfq:HumanFix .
+
+# ---------- Datatype properties ----------
+rfq:programStage a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "program stage" ; rdfs:comment "Current pipeline stage: intake, validate, match, cost, approve or send." ;
+    rdfs:domain rfq:Program ; rdfs:range xsd:string .
+rfq:issueSeverity a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "issue severity" ; rdfs:comment "blocker, warning or info." ;
+    rdfs:domain rfq:Issue ; rdfs:range xsd:string .
+rfq:issueStatus a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "issue status" ; rdfs:comment "open or resolved." ;
+    rdfs:domain rfq:Issue ; rdfs:range xsd:string .
+rfq:assignedTo a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "assigned to" ; rdfs:comment "Owner of an issue or task: PLA, a tool name, or a human role such as 'human:estimator'." ;
+    rdfs:range xsd:string .
+rfq:taskStatus a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "task status" ; rdfs:comment "pending, running, done, failed or blocked." ;
+    rdfs:domain rfq:Task ; rdfs:range xsd:string .
+rfq:runStatus a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "run status" ; rdfs:comment "succeeded, failed or running." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range xsd:string .
+rfq:attemptNumber a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "attempt number" ; rdfs:comment "1 for the first call, 2 for the first retry, and so on." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range xsd:integer .
+rfq:isAgentic a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "is agentic" ; rdfs:comment "True if the tool is LLM-backed, false if it is deterministic code. Drives the AgenticTool / DeterministicTool classification." ;
+    rdfs:domain rfq:Tool ; rdfs:range xsd:boolean .
+rfq:requiresApproval a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "requires approval" ; rdfs:comment "True if the tool's output must pass a human approval gate before it leaves the system." ;
+    rdfs:domain rfq:Tool ; rdfs:range xsd:boolean .
+rfq:toolContractInput a owl:DatatypeProperty ;
+    rdfs:label "tool contract input" ; rdfs:comment "Plain-language description of what the tool takes as input." ;
+    rdfs:domain rfq:Tool ; rdfs:range xsd:string .
+rfq:toolContractOutput a owl:DatatypeProperty ;
+    rdfs:label "tool contract output" ; rdfs:comment "Plain-language description of what the tool returns." ;
+    rdfs:domain rfq:Tool ; rdfs:range xsd:string .
+rfq:gateDecision a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "gate decision" ; rdfs:comment "pending, approved or rejected." ;
+    rdfs:domain rfq:ApprovalGate ; rdfs:range xsd:string .
+rfq:approvedBy a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "approved by" ; rdfs:comment "The person who approved the gate." ;
+    rdfs:domain rfq:ApprovalGate ; rdfs:range xsd:string .
+rfq:decidedAtTime a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "decided at time" ; rdfs:comment "When the gate was approved or rejected." ;
+    rdfs:domain rfq:ApprovalGate ; rdfs:range xsd:dateTime .
+rfq:quoteStatus a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "quote status" ; rdfs:comment "draft, awaiting approval or sent. A quote may be 'sent' only if an approval gate for it is approved (SHACL)." ;
+    rdfs:domain rfq:Quote ; rdfs:range xsd:string .
+rfq:rejectedBy a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "rejected by" ; rdfs:comment "The person who rejected the gate (counterpart of approved by)." ;
+    rdfs:domain rfq:ApprovalGate ; rdfs:range xsd:string .
+rfq:appliedBy a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "applied by" ; rdfs:comment "Who applied a human fix, e.g. 'human:estimator'." ;
+    rdfs:domain rfq:HumanFix ; rdfs:range xsd:string .
+rfq:idempotencyKey a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "idempotency key" ; rdfs:comment "Key the PLA derives from the tool, its inputs and the RFQ version, so a replayed step after a crash is recognised and not applied twice." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range xsd:string .
+rfq:outputSummary a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "output summary" ; rdfs:comment "Compact JSON summary of what a successful tool run returned (truncated), for the audit trail." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range xsd:string .
+rfq:runError a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "run error" ; rdfs:comment "Error message of a failed tool run (truncated)." ;
+    rdfs:domain rfq:ToolRun ; rdfs:range xsd:string .
+rfq:quoteSummary a owl:DatatypeProperty ;
+    rdfs:label "quote summary" ; rdfs:comment "Plain-language summary of a quote written by the explain_quote tool from the computed numbers. It never computes numbers itself." ;
+    rdfs:domain rfq:Quote ; rdfs:range xsd:string .
