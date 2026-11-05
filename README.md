@@ -17,7 +17,7 @@ The shared vocabulary (OWL ontology, SHACL shapes, SPARQL competency queries, co
 ```bash
 python -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest                          # 30 tests, offline (canned LLM)
+python -m pytest                          # 31 tests, offline (canned LLM)
 
 # RFQ-1002 is incomplete: the PLA stops with two blocker issues
 python -m pla_agents run --rfq data/rfq-1002-incomplete.ttl --run-id demo --quote-date 2026-10-27 \

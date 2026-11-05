@@ -2,7 +2,7 @@
 
 *HAPP Research · Chris Couch · repos: `supergus/pla-agents` (ontology in `ontology/`), `supergus/pla-demo` · live demo: pla.chriscouch.net · Nov 4, 2026*
 
-> **Update (Nov 5, 2026):** `supergus/rfq-ontology` was folded into `supergus/pla-agents` (formerly `rfq-agents`) under `ontology/` and archived; `rfq-demo` was renamed `pla-demo`; the Python package is now `pla_agents`. Later sections record the initial build under the original names. OWL IRIs and Cloudflare resource names (`rfq-demo` Pages project, `rfq-pla` Worker) are unchanged.
+> **Update (Nov 5, 2026):** `supergus/rfq-ontology` was folded into `supergus/pla-agents` (formerly `rfq-agents`) under `ontology/` (history preserved) and archived; `rfq-demo` was renamed `pla-demo`; the Python package is `pla_agents`; env vars are `PLA_AGENTS_DB` / `PLA_AGENTS_MODEL` / `PLA_AGENTS_LLM` / `PLA_ONTOLOGY_DIR`. Sections 5 and earlier record the initial build under the original names. OWL IRIs (`https://supergus.github.io/rfq-ontology/…`) and Cloudflare resource names (`rfq-demo` Pages project, `rfq-pla` Worker, Workflow `rfq-pla-run`) are deliberately unchanged. Library copies of this write-up and the sample prompts were removed so this tree is the single source of truth.
 
 
 ## 1. Goal: demonstrate a managed ontology
@@ -82,7 +82,7 @@ Roadmap (`docs/roadmap.md`): risk/contingency %, payment-terms cost of money, cu
 |---|---|---|
 | **1. Ontology** | The vocabulary: classes, properties, axioms (OWL 2 DL) | `ontology/*.ttl` |
 | **2. Data + shapes** | Instance data (library, rates, RFQs) and SHACL completeness rules | `data/*.ttl`, `shapes/*.ttl` |
-| **3. Tools** | Code that computes, queries and orchestrates | `scripts/`, `queries/`, `tests/`; the PLA and its tools live in `supergus/rfq-agents` |
+| **3. Tools** | Code that computes, queries and orchestrates | `ontology/scripts/`, `ontology/queries/`, `ontology/tests/`; the PLA and its tools live in the same repo (`pla_agents/`) |
 
 Rule: OWL describes meaning, SHACL checks data, SPARQL asks questions, and Python does arithmetic.
 
@@ -130,20 +130,20 @@ Biggest cost driver: weld op 30 on the base plate, $11.25 per bracket. `tests/te
 ### Git structure
 
 ```
-rfq-ontology/
-├── ontology/   rfq.ttl (root, imports all) + rfq-core, rfq-provenance, rfq-package,
-│               rfq-bom, rfq-library, rfq-costing, rfq-pla (.ttl) + catalog-v001.xml
-├── data/       reference.ttl (library, routings, work centers, rate tables)
-│               rfq-1001.ttl (complete RFQ, worked example, quote revs A and B)
-│               rfq-1002-incomplete.ttl (no Incoterm, no material/finish spec)
-├── shapes/     rfq-completeness.ttl (SHACL)
-├── queries/    cq1 … cq8 SPARQL competency queries
-├── scripts/    quote.py, run_queries.py, reason.sh (ROBOT), rfqlib.py
-├── tests/      pytest suites: ontology, SHACL, queries, quote, reasoner
-├── docs/       concepts, formulas, worked example, simplifications,
-│               competency questions, sessions, roadmap
-├── build/      generated outputs (reasoned graph, ROBOT report, quote results), uploaded as a CI artifact
-└── .github/    workflows/ci.yml (workflow "tests"), PR template
+pla-agents/                         (repo root; CI workflow "tests")
+├── pla_agents/                     PLA loop, planner, tools, contracts, LLM clients
+├── data/ tests/ docs/              agent samples, agent tests, architecture
+├── ontology/                       folded-in tutorial ontology (was rfq-ontology)
+│   ├── ontology/   rfq.ttl (root) + rfq-core, rfq-provenance, rfq-package,
+│   │               rfq-bom, rfq-library, rfq-costing, rfq-pla (.ttl) + catalog-v001.xml
+│   ├── data/       reference.ttl; rfq-1001.ttl; rfq-1002-incomplete.ttl; pla-run-1002.ttl
+│   ├── shapes/     rfq-completeness.ttl, pla-shapes.ttl
+│   ├── queries/    cq1 … cq12 SPARQL competency queries
+│   ├── scripts/    quote.py, run_queries.py, reason.sh (ROBOT), rfqlib.py
+│   ├── tests/      pytest: ontology, SHACL, queries, quote, reasoner, pla
+│   ├── docs/       PROJECT.md, sample-llm-prompts.md, concepts, formulas, …
+│   └── build/      reasoned graph, ROBOT report, quote results (CI artifact)
+└── .github/        workflows/ci.yml — ontology checks then agents tests
 ```
 
 ### CI/CD Process
@@ -200,7 +200,7 @@ Other built-in stories: CQ6 flags quote rev A for using the superseded FY2025 we
 
 ## 5. Build summary: what was delivered
 
-A self-contained summary of the initial build of [supergus/rfq-ontology](https://github.com/supergus/rfq-ontology) (public). Design detail is in sections 3 and 4; this section records what was actually delivered and checked.
+A self-contained summary of the **initial** build of [supergus/rfq-ontology](https://github.com/supergus/rfq-ontology) (now archived; counts below are the pre-PLA snapshot). Design detail is in sections 3 and 4; current size is in section 4's opening paragraph and section 8.
 
 ### Ontology
 
@@ -264,20 +264,23 @@ The process is described once, in section 3 ("CI/CD Process"). Two proof points 
   - `explain_quote`: plain-language summary of the computed numbers, never calculating them itself
   - Full sample prompts and schemas sent to the model: [sample-llm-prompts.md](sample-llm-prompts.md)
 - **Tools in the ontology:** each tool is a `Tool` with declared inputs and outputs, so the PLA selects by contract and does not care whether it is code or an LLM.
-- **Provenance classes:** `Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `HumanFix`. Each `ToolRun` records the tool, inputs, outputs, timestamps, attempt number, `idempotencyKey`, an `outputSummary` or `runError`, and whether it was agentic, PROV-style, for every call. Human fixes (`hasFix`, `appliedBy`) and gate decisions (`approvedBy` / `rejectedBy`) are recorded the same way. Every term the PLA writes is declared in the ontology; `rfq-agents` keeps only planner metadata (stage, order, requires, produces) in its own namespace.
+- **Provenance classes:** `Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `HumanFix`. Each `ToolRun` records the tool, inputs, outputs, timestamps, attempt number, `idempotencyKey`, an `outputSummary` or `runError`, and whether it was agentic, PROV-style, for every call. Human fixes (`hasFix`, `appliedBy`) and gate decisions (`approvedBy` / `rejectedBy`) are recorded the same way. Every term the PLA writes is declared in the ontology; `pla_agents` keeps only planner metadata (stage, order, requires, produces) in its own namespace.
 - **Human approval gate:** the PLA stops before `render_quote` output is sent anywhere and waits for a person to approve or reject. Agents propose; people approve.
 - **Durability and retries from the start:** run state is persisted after every step; failed tool calls retry with exponential backoff; each failure is logged as an `Issue`; a run resumes where it stopped after a refresh or failure.
 - **Conversational layer (next):** a thin conversational agent can sit on top of the Python PLA to make it "conversant" without changing the PLA itself.
 
-### Repo split
+### Repo layout (Nov 5, 2026)
 
-Agents live in a **separate repo**, `supergus/rfq-agents`, the pattern for enterprise-scale production. The ontology repo is the shared vocabulary; the agent repo consumes it as a **versioned dependency**, so vocabulary changes and agent changes are reviewed and released independently.
+The agents and the ontology now live in **one public repo**, `supergus/pla-agents`: the PLA package at the root (`pla_agents/`) and the tutorial OWL tree under `ontology/`. CI runs the ontology checks first, then the agents' tests, so a vocabulary change and the code that depends on it land in one reviewed PR. Set `PLA_ONTOLOGY_DIR` to point the PLA at another checkout if needed. OWL IRIs keep the historical `https://supergus.github.io/rfq-ontology/…` namespace.
+
+*(Earlier design, preserved in section 5: agents in a separate `rfq-agents` repo consuming `rfq-ontology` as a versioned dependency. Folded together on Nov 5 so tutorial PRs stay atomic.)*
 
 ### Hosting
 
-- **Cloudflare.** Public demo at **pla.chriscouch.net**, served by Cloudflare Pages from `supergus/rfq-demo` (output directory `public`).
+- **Cloudflare.** Public demo at **pla.chriscouch.net**, served by Cloudflare Pages from `supergus/pla-demo` (Pages project name still `rfq-demo`; output directory `public`).
 - **"Secret?" gate:** a shared-password prompt in front of the whole site, implemented as Pages Functions middleware (`functions/_middleware.js`). The secret lives in Cloudflare encrypted secrets; success sets a signed HttpOnly cookie; every attempt is logged with IP, timestamp and result in D1; failed attempts are rate-limited; pages are `noindex`.
-- **PLA Worker `rfq-pla`** (in `worker/`): calls Workers AI Llama 3.3 70B through a binding (no API key), keeps run state in a Durable Object / Workflow with retries, enforces per-IP and global rate limits, and holds a hard **$20/day** budget in code (it answers "demo is resting" when spent), backed by a Cloudflare billing alert. Sample RFQs only, no customer data.
+- **PLA Worker `rfq-pla`** (in `pla-demo/worker/`): calls Workers AI Llama 3.3 70B through a binding (no API key), runs each AI step as Workflow `rfq-pla-run`, keeps budget state in a Durable Object, enforces per-IP and global rate limits, and holds a hard **$20/day** budget in code (it answers "The demo is resting for today…" when spent). Sample RFQs only, no customer data. Prompts live in `worker/src/prompts/` (snapshot in [sample-llm-prompts.md](sample-llm-prompts.md)).
+- **Leaf Tender** is a separate ontology management project hosted at https://leaftender.chriscouch.net (not part of the PLA demo). The demo's old `/leaf-tender/` path 302-redirects there.
 
 ## 7. The demo console
 
@@ -297,13 +300,15 @@ The demo is a **live management portal into a PLA run**, laid out like an operat
 
 | Item | Status |
 |---|---|
-| `supergus/rfq-ontology` public, CI `tests`, protected `main` | Live |
-| This write-up | Live |
-| PLA classes (`Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `ApprovalGate`, `HumanFix`) and run audit terms in the ontology (`rfq-pla.ttl`, sample run, SHACL, CQ9 to CQ12) | Live |
-| RFQ-line matches recorded as `SimilarityMatch` (`forRFQLine`, `matchedProduct`) | Live |
-| `supergus/rfq-agents` repo (PLA loop, tools, retries) | In progress |
-| `rfq-demo` v1 console, Pages deploy, pla.chriscouch.net, "Secret?" gate | In progress |
-| `rfq-pla` Worker (Workers AI, rate limits, $20/day cap) | In progress |
+| `supergus/pla-agents` public (ontology under `ontology/` + PLA package `pla_agents/`), CI `tests`, protected `main` | Live |
+| Former `supergus/rfq-ontology` | Archived (contents folded in with history) |
+| This write-up + sample LLM prompts (single source of truth in-repo) | Live |
+| Ontology size (recounted Nov 5, 2026 from TTL): **49 classes, 47 object properties, 55 datatype properties** in `rfq:`, plus 2 PROV-O classes and 5 PROV-O properties, and 11 individuals | Live |
+| PLA classes (`Program`, `Issue`, `Task`, `Tool`, `ToolRun`, `ApprovalGate`, `HumanFix`) and run audit terms (`rfq-pla.ttl`, sample run, SHACL, CQ9 to CQ12) | Live |
+| RFQ-line matches recorded as `SimilarityMatch` (`forRFQLine`, `matchedProduct`); `match_library_part` writes them | Live |
+| `pla_agents` PLA loop, tools, retries, approval gate (31 offline tests) | Live |
+| `supergus/pla-demo` console at pla.chriscouch.net, "Secret?" gate, `/actual/` quote demo, `/leaf-tender/` → Leaf Tender redirect | Live |
+| Worker `rfq-pla` + Workflow `rfq-pla-run` (Workers AI Llama 3.3 70B, rate limits, $20/day cap) | Live |
 | pyLODE docs on GitHub Pages; Protégé check | Not started |
 
 ## 9. CI/CD and who manages what
@@ -312,20 +317,22 @@ The demo is a **live management portal into a PLA run**, laid out like an operat
 
 | Repo | Visibility | Contents | CI |
 |---|---|---|---|
-| `supergus/rfq-ontology` | Public | Ontology, data, SHACL shapes, SPARQL queries, quote calculator | GitHub Actions workflow `tests`: pytest, pySHACL, SPARQL competency queries, ROBOT + HermiT reasoner and OWL 2 DL profile check |
-| `supergus/rfq-demo` | Public | Static console in `public/`, `functions/` gate, `worker/` (rfq-pla) | Cloudflare Pages build; Worker deploy Action |
-| `supergus/rfq-agents` (planned name) | — | PLA orchestrator and deterministic/agentic tools; depends on a versioned rfq-ontology release | `tests` workflow, same pattern |
+| `supergus/pla-agents` | Public | PLA orchestrator (`pla_agents/`) + tutorial ontology (`ontology/`: OWL, data, SHACL, SPARQL, quote calculator, this write-up) | GitHub Actions workflow `tests`: ontology checks (pytest, pySHACL, SPARQL CQs, ROBOT + HermiT) then agents pytest |
+| `supergus/pla-demo` | Public | Static console in `public/`, `functions/` gate, `worker/` (`rfq-pla` + Workflow `rfq-pla-run`) | Cloudflare Pages build (project name still `rfq-demo`); Worker deploy Action on `worker/**` / `functions/**` |
+| `supergus/rfq-ontology` | Public, **archived** | Historical only; contents live under `pla-agents/ontology/` | — |
+
+Leaf Tender is a separate ontology management project hosted at https://leaftender.chriscouch.net (not part of the PLA demo).
 
 ### Pipeline
 
-Every repo uses the same branch, PR, `tests`, "Grok Bot QC" and merge flow, with the same `main` protection, as described in section 3 ("CI/CD Process"). Cloudflare adds two things on top: Pages builds a **preview URL on every PR** and goes live on merge to `main`, and the `rfq-pla` Worker is deployed by a GitHub Action on merge, like djnigiri-api.
+Every active repo uses the same branch, PR, `tests`, "Grok Bot QC" and merge flow, with the same `main` protection, as described in section 3 ("CI/CD Process"). Cloudflare adds two things on top: Pages builds a **preview URL on every PR** and goes live on merge to `main`, and the `rfq-pla` Worker is deployed by a GitHub Action on merge.
 
 ### Who manages what
 
 | Owner | Responsibilities |
 |---|---|
-| **T800 (AI Officer)** | `rfq-ontology` repo; agent and tool code (`rfq-agents`); demo front-end content in `public/`; this write-up; review, QC and merge of content PRs |
-| **Cloud Manager (IT Services)** | Cloudflare side: Pages project and deploy config; pla.chriscouch.net DNS and custom domain; `functions/_middleware.js` gate and its secrets (`PLA_SECRET`, `COOKIE_KEY`, entered by Chris through a private secret form, never in the repo or chat); D1 access log; Worker deploy workflow; rate limits and billing alert; QCs and merges its own deploy/config PRs |
-| **Chris** | Approvals; the shared secret value; the daily cap ($20); Cloudflare API token updates (the current token cannot yet create rate-limit rules) |
+| **T800 (AI Officer)** | `pla-agents` (ontology + PLA code); demo front-end content in `pla-demo/public/`; Worker tools/prompts; this write-up; review, QC and merge of content PRs |
+| **Cloud Manager (IT Services)** | Cloudflare side: Pages project `rfq-demo` and deploy config; pla.chriscouch.net DNS and custom domain; `functions/_middleware.js` gate and its secrets (`PLA_SECRET`, `COOKIE_KEY`, entered by Chris through a private secret form, never in the repo or chat); D1 access log; Worker deploy workflow; rate limits and billing alert; QCs and merges its own deploy/config PRs |
+| **Chris** | Approvals; the shared secret value; the daily cap ($20); Cloudflare API token updates |
 
 Neither bot edits the other's files: T800 puts nothing in `functions/`, and Cloud Manager leaves `public/` content and the ontology alone.

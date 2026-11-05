@@ -6,8 +6,8 @@
 A tutorial-grade, OWL 2 DL toy ontology for a manufacturing **RFQ-to-quote** process,
 managed in GitHub with a PR process and CI. It is a teaching project on data ontology
 for orchestrated agentic systems: agents that ingest an RFQ, check it, build a BOM,
-estimate costs and price a quote need a shared, testable vocabulary. This repo is that
-vocabulary for one small business process.
+estimate costs and price a quote need a shared, testable vocabulary. This tree is that
+vocabulary for one small business process; it lives under `supergus/pla-agents` as `ontology/`.
 
 ## The process being modelled
 
@@ -47,7 +47,9 @@ namespace (plus 2 classes and 5 properties reused from W3C PROV-O), and 11 indiv
 
 ## Run the checks
 
+Run these from **this directory** (`ontology/`), which has its own `requirements.txt`.
 Python 3.10+ and, for the OWL reasoning step, Java 11+ and [ROBOT](https://robot.obolibrary.org).
+From the repo root, CI uses `working-directory: ontology` for the same steps, then runs the agents' pytest.
 
 ```bash
 python -m venv .venv && . .venv/bin/activate
