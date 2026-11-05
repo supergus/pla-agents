@@ -86,6 +86,13 @@ See [docs/sessions.md](docs/sessions.md): 1 scope + competency questions; 2 RFQ 
 completeness; 3 BOM + make/buy; 4 library, routings, rate tables; 5 cost chain + provenance;
 6 sample data, SPARQL, SHACL, CI, docs publishing.
 
+
+## Related repositories
+- This repo (`rfq-ontology`) — tutorial OWL ontology for the RFQ-to-quote process.
+- [supergus/rfq-agents](https://github.com/supergus/rfq-agents) — PLA orchestrator and tools; pins this ontology via `ontology.lock`.
+- [supergus/rfq-demo](https://github.com/supergus/rfq-demo) — live PLA management console / quote demo at https://pla.chriscouch.net.
+- Leaf Tender is a separate ontology management project hosted at https://leaftender.chriscouch.net (not part of this RFQ demo trio).
+
 ## Process
 
 `main` is protected; all changes go through a PR, the `tests` workflow, and a manual
