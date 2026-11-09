@@ -1,5 +1,8 @@
 # pla-agents
 
+**Repo map for auditors:** [REPO-GUIDE.md](REPO-GUIDE.md) — every tracked file; Python PLA + folded-in tutorial ontology.
+
+
 The **PLA (Program Lifecycle Agent)** and its tools for the RFQ-to-quote process.
 
 The PLA runs one quote program end to end: intake → validate → match → cost → **human approval** → send.
